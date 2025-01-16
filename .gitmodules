@@ -1,0 +1,24 @@
+[submodule "automation-api-service"]
+	path = automation-api-service
+	url = https://github.com/ONDC-Official/automation-api-service.git
+[submodule "automation-mock-service"]
+	path = automation-mock-service
+	url = https://github.com/ONDC-Official/automation-mock-service.git
+[submodule "automation-db"]
+	path = automation-db
+	url = https://github.com/ONDC-Official/automation-db.git
+[submodule "automation-frontend"]
+	path = automation-frontend
+	url = https://github.com/ONDC-Official/automation-frontend.git
+[submodule "automation-backoffice"]
+	path = automation-backoffice
+	url = https://github.com/ONDC-Official/automation-backoffice.git
+[submodule "automation-report-service"]
+	path = automation-report-service
+	url = https://github.com/ONDC-Official/automation-report-service.git
+[submodule "automation-cache"]
+	path = automation-cache
+	url = https://github.com/ONDC-Official/automation-cache.git
+[submodule "automation-monitoring"]
+	path = automation-monitoring
+	url = https://github.com/ONDC-Official/automation-monitoring.git
