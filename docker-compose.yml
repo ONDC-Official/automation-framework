@@ -3,39 +3,49 @@ version: "3.8"
 
 services:
   automation-db:
-    # image: mofahsan/automation-db:latest
-    build: ./automation-db
+    build: 
+      context: ./automation-db
+      dockerfile: dockerfile.sdk
     ports:
       - 8080:8080
-    networks:
-      - automation-network 
     depends_on:
       - yugabyte
-
+    env_file:
+      - ./automation-db/docker.env
+    networks:
+      - automation-network 
+    entrypoint: >
+      /bin/bash -c "
+        ./wait-for-it.sh yugabyte 5433 60 &&
+        exec java -jar app.jar
+      "
+    volumes:
+      - ./scripts/wait-for-it.sh:/app/yugabyte-integration/wait-for-it.sh
+      
 
   automation-api-service:
     build: ./automation-api-service
     ports:
       - "3032:3000"
-    # env_file:
-    #   - .env
     restart: always
     networks:
       - automation-network
     depends_on:
       - redis
+    env_file:
+      - ./docker-env/api-service.env
 
   automation-mock-service:
     build: ./automation-mock-service
     ports:
       - "3031:8000"
-    # env_file:
-    #   - .env
     restart: always
     networks:
       - automation-network
     depends_on:
       - redis
+    env_file:
+      - ./docker-env/mock-service.env
 
   automation-report-service:
     build: ./automation-report-service
@@ -45,6 +55,8 @@ services:
       - automation-network
     depends_on:
       - redis
+    env_file:
+      - ./docker-env/report-service.env
 
   automation-ui-backend:
     build:
@@ -53,8 +65,8 @@ services:
     container_name: automation-ui-backend
     ports:
       - "3034:5000"
-    # env_file:
-    #   - backend/.env
+    env_file:
+      - ./docker-env/automation-backend.env
     restart: always
     networks:
       - automation-network
@@ -64,12 +76,12 @@ services:
   automation-ui-frontend:
     build:
       context: ./automation-frontend/frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.sdk
     container_name: automation-ui-frontend
     ports:
       - "3035:5001"
-    # env_file:
-    #   - frontend/.env
+    env_file:
+      - ./automation-frontend/frontend/docker.env
     restart: always
     networks:
       - automation-network
@@ -79,18 +91,20 @@ services:
     build: ./automation-backoffice/backend
     ports:
       - 5200:5000
-    # env_file:
-    #   - backend/.env
+    env_file:
+      - ./docker-env/back-office.backend.env
     depends_on:
       - redis
+    networks:
+      - automation-network
 
   backoffice-frontend:
     restart: always
-    build: ./automation-backoffice/frontend
+    build: 
+      context: ./automation-backoffice/frontend
+      dockerfile: Dockerfile.sdk
     ports:
-      - 5100:5001
-    # env_file:
-    #   - frontend/.env
+      - 5100:5001   
 
   redis:
     image: redis:6.2
@@ -100,10 +114,19 @@ services:
     networks:
       - automation-network 
 
+
   yugabyte:
     image: yugabytedb/yugabyte:latest
     container_name: yugabyte
-    command: [ "/home/yugabyte/bin/yugabyted", "start", "--base_dir=/mnt/data", "--daemon=false" ]
+    # command: [ "/home/yugabyte/bin/yugabyted", "start", "--base_dir=/mnt/data", "--daemon=false" ]
+    command: >
+      /bin/bash -c
+      "/home/yugabyte/bin/yugabyted start --base_dir=/mnt/data --daemon=false &
+      sleep 10 &&
+      bash /mnt/scripts/init-db.sh &&
+      tail -f /dev/null"
+
+
     ports:
       - "7001:7000"  # Master UI
       - "9000:9000"  # TServer UI
@@ -111,6 +134,7 @@ services:
       - "9042:9042"  # YCQL API
     volumes:
       - yugabyte_data:/mnt/data
+      - ./scripts/init-db.sh:/mnt/scripts/init-db.sh # Mount the init script
     networks:
       - automation-network 
 

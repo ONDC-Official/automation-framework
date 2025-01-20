@@ -1,8 +1,13 @@
 # Automation-Framework
 
+# prepare repository
+git submodule update --init --recursive
 
-1) Run yugabyte db first 
-docker compose up yugabyte -d
 
-2) Start rest of the services with 
-docker compose up -d
+## starting services
+docker compose up
+
+
+## services url
+http://localhost:5100/backoffice-frontend  -- backoffice url 
+http://localhost:3035 -- automation ui
