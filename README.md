@@ -2,13 +2,13 @@
 A universal, intelligent framework designed to enable and facilitate the implementation of open network protocols of ONDC. It provides for seamless API validation, experiencing real-world use cases and scenarios, and robust interoperability. Built for adaptability, it serves as a foundation for scalable, ONDC’s open-network implementations across diverse domains.
 
 ## Objectives
-Act as a universal protocol experience and enablement framework
-API processing & real-world scenario simulation including ONDC protocol checks
-Go-to source for development & validation
-Automation-driven testing for faster adoption
-Standardized api-level validation & compliance
-Enhanced debugging & error resolution
-Address development journey hindrances ONDC NPs face
+- Act as a universal protocol experience and enablement framework
+- API processing & real-world scenario simulation including ONDC protocol checks
+- Go-to source for development & validation
+- Automation-driven testing for faster adoption
+- Standardized api-level validation & compliance
+- Enhanced debugging & error resolution
+- Address development journey hindrances ONDC NPs face
 
 ## Capabilities
 Protocol Workbench offers guided assistance for experiencing open API based transactions being executed in an open network, as it simulates real NP-to-NP interactions – for example, a buyer app developer can illustrate flows against a simulated seller app in the sandbox – making end-to-end integration development feasible. It enforces protocol consistency with validations based on the flows defined, helping reduce divergent interpretations.
