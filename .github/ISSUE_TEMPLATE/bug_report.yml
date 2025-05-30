@@ -1,6 +1,7 @@
-name: Protocol Workbench Issues
-description: Report bugs, suggest improvements, or request new features
-title: "[Issue]"
+name: Protocol Workbench Issue
+description: Report bugs, suggest improvements, or request new features related to the Protocol Workbench
+title: "[Issue] "
+labels: [needs-triage]
 body:
   - type: dropdown
     id: issue_type
@@ -52,7 +53,6 @@ body:
     id: domain
     attributes:
       label: Domain
-      description: Mention the domain (e.g., RET10, LOG10, TRV11, etc.)
       placeholder: "e.g., RET10"
 
   - type: input
@@ -64,7 +64,6 @@ body:
   - type: input
     id: test_type
     attributes:
-      attributes:
       label: Testing Mode
       placeholder: "e.g., Schema or Flow"
 
