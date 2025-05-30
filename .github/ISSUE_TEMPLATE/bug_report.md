@@ -1,6 +1,6 @@
 ---
-Name: Protocol Workbench Issues
-About: Report bugs / suggest improvements / request new features
+name: Protocol Workbench Issues
+about: Report bugs / suggest improvements / request new features
 ---
 ## Type of Issue
 Please select one:
