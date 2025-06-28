@@ -18,6 +18,6 @@ Protocol Workbench offers guided assistance for experiencing open API based tran
 - Flow Testing Suite – Simulates end-to-end transactions to verify adherence to protocol flows and expected behavior. It enables testing of complete ONDC workflows across buyer and seller interactions in the respective domain. Enter your details to get started with the testing. Once entered, based on the use case selected, flows specific to the domain/ use case will be available to initiate the flow testing process. Process & send payloads as per the flow and issues, if any, are highlighted as you proceed step by step.
 
 ## Experiencing it
-You can experience the Protocol Workbench here: https://staging-automation.ondc.org
+You can experience the Protocol Workbench here: https://workbench.ondc.tech/home
 
 We’d love to hear your feedback, suggestions, questions, or thoughts — feel free to reach out with anything at PW-support@ondc.org
