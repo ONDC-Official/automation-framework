@@ -1,4 +1,4 @@
-# ONDC — From a Developer's POV
+# ONDC
 
 > A comprehensive, protocol-focused introduction to the Open Network for Digital Commerce for developers who are encountering ONDC for the first time.
 
