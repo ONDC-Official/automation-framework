@@ -1,0 +1,26 @@
+{
+  "name": "ondc-automation-framework",
+  "private": true,
+  "workspaces": [
+    "packages/logger",
+    "packages/mock-runner",
+    "packages/validation-compiler",
+    "packages/utils/build-tools",
+    "services/db",
+    "services/frontend/backend",
+    "services/frontend/frontend",
+    "services/backoffice/backend",
+    "services/backoffice/frontend",
+    "services/report",
+    "services/config",
+    "services/form",
+    "services/mock-playground"
+  ],
+  "scripts": {
+    "setup": "npm install --ignore-scripts && npm run build:packages",
+    "build:packages": "npm run build -w packages/logger -w packages/mock-runner -w packages/validation-compiler -w packages/utils/build-tools --if-present",
+    "dev:packages": "npm run dev -w packages/logger -w packages/mock-runner --if-present",
+    "build:generator": "cd tools/api-service-generator && npm install && npm run build",
+    "build:onix": "cd tools/beckn-onix && docker build -f Dockerfile.adapter-with-plugins -t automation-beckn-onix:local ."
+  }
+}

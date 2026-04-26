@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+build-output/
+*.js.map
+*.d.ts.map
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+automation-recorder
+automation-beckn-onix/beckn-onix
+
+# Go test artifacts
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Environment files — never commit real env values
+.env
+.env.local
+.env.*.local
+docker-env/*.env
+!docker-env/*.env.example
+
+# But keep example files
+!.env.example
+!*.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pino*.log
+
+# OS artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V3
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / editor
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# Testing
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+
+# Docker
+.dockerignore
+
+# Generated files (do not commit these — regenerate from spec)
+automation-api-service-generator/build-output/
+automation-validation-compiler/generated/
+automation-mock-playground-service/src/generated/
+automation-report-service/src/generated/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/

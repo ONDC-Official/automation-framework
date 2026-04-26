@@ -1,0 +1,58 @@
+name: Feature Request
+description: Suggest a new capability or improvement to Protocol Workbench
+title: "[Feature] "
+labels: [enhancement, needs-triage]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this affect?
+      options:
+        - Flow Testing (end-to-end simulation)
+        - Schema Validation Tool
+        - Report / Validation Output
+        - Mock Service (counterparty simulation)
+        - Self-Hosting / Deployment
+        - Developer Experience / Setup
+        - Backoffice / Admin
+        - API / Integration
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the current limitation or pain point. What can't you do today?
+      placeholder: "e.g., When testing FIS14 flows, the mock service doesn't support the credit-card-specific fields in the /init response"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should this work? Be as specific as you can — API shapes, UI behavior, config format.
+      placeholder: "e.g., Add support for x-validations rule type 'regex' so we can validate IFSC codes"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds have you tried, or what other approaches could solve this?
+
+  - type: input
+    id: domain
+    attributes:
+      label: Relevant ONDC domain (if applicable)
+      placeholder: "e.g., ONDC:FIS14, ONDC:TRV11"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, screenshots, spec references, or anything else useful
