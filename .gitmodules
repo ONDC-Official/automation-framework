@@ -31,3 +31,18 @@
 [submodule "automation-beckn-onix"]
 	path = tools/beckn-onix
 	url = https://github.com/ONDC-Official/automation-beckn-onix.git
+[submodule "services/config"]
+	path = services/config
+	url = https://github.com/ONDC-Official/automation-config-service.git
+[submodule "services/form"]
+	path = services/form
+	url = https://github.com/ONDC-Official/automation-form-service.git
+[submodule "services/mock-playground"]
+	path = services/mock-playground
+	url = https://github.com/ONDC-Official/automation-mock-playground-service.git
+[submodule "services/recorder"]
+	path = services/recorder
+	url = https://github.com/ONDC-Official/automation-recorder-service.git
+[submodule "specs"]
+	path = specs
+	url = https://github.com/ONDC-Official/automation-specifications.git
