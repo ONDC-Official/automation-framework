@@ -1,0 +1,260 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ONDC Automation Workbench — local dev (build from submodule source)
+#
+# Usage:
+#   cd local-dev
+#   cp .env.example .env       # adjust if needed
+#   docker compose up --build
+#
+# UI is reachable at http://localhost:${UI_FRONTEND_PORT:-3000}
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Infrastructure ─────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: workbench-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - workbench
+
+  yugabyte:
+    image: yugabytedb/yugabyte:latest
+    container_name: workbench-yugabyte
+    command: >
+      /bin/bash -c "/home/yugabyte/bin/yugabyted start --base_dir=/mnt/data --daemon=false &
+      sleep 10 &&
+      bash /mnt/init/init-db.sh &&
+      tail -f /dev/null"
+    ports:
+      - "7001:7000"   # Master UI
+      - "9000:9000"   # TServer UI
+      - "5433:5433"   # PostgreSQL API
+      - "9042:9042"   # YCQL API
+    volumes:
+      - yugabyte_data:/mnt/data
+      - ../scripts/init-db.sh:/mnt/init/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "ysqlsh -h localhost -p 5433 -U yugabyte -c 'select 1' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - workbench
+
+  # ── Tier 1: Core platform services (start first) ───────────────────────────
+  config-service:
+    build:
+      context: ../services/automation-config-service
+      dockerfile: Dockerfile
+    container_name: workbench-config-service
+    env_file: .env
+    environment:
+      PORT: ${CONFIG_SERVICE_PORT:-3001}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "${CONFIG_SERVICE_PORT:-3001}:${CONFIG_SERVICE_PORT:-3001}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${CONFIG_SERVICE_PORT:-3001}/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - workbench
+
+  db-service:
+    build:
+      context: ../services/automation-db
+      dockerfile: Dockerfile
+    container_name: workbench-db-service
+    env_file: .env
+    environment:
+      DB_URL: ${DB_URL:-jdbc:yugabytedb://yugabyte:5433/yugabyte}
+      DB_USER: ${DB_USER:-yugabyte}
+      DB_PASSWORD: ${DB_PASSWORD:-yugabyte}
+    ports:
+      - "${DB_SERVICE_PORT:-8080}:8080"
+    depends_on:
+      yugabyte:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+    networks:
+      - workbench
+
+  # ── Tier 2: Service layer (depends on config + db) ─────────────────────────
+  form-service:
+    build:
+      context: ../services/automation-form-service
+      dockerfile: Dockerfile
+    container_name: workbench-form-service
+    env_file: .env
+    environment:
+      PORT: ${FORM_SERVICE_PORT:-3003}
+      CONFIG_SERVICE_URL: http://config-service:${CONFIG_SERVICE_PORT:-3001}
+      REDIS_HOST: redis
+    ports:
+      - "${FORM_SERVICE_PORT:-3003}:${FORM_SERVICE_PORT:-3003}"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - workbench
+
+  recorder-service:
+    build:
+      context: ../services/automation-recorder-service
+      dockerfile: Dockerfile
+    container_name: workbench-recorder-service
+    env_file: .env
+    environment:
+      HTTP_LISTEN_ADDR: ":${RECORDER_SERVICE_PORT:-3004}"
+      REDIS_ADDR: redis:6379
+    ports:
+      - "${RECORDER_SERVICE_PORT:-3004}:${RECORDER_SERVICE_PORT:-3004}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - workbench
+
+  report-service:
+    build:
+      context: ../services/automation-report-service
+      dockerfile: Dockerfile
+    container_name: workbench-report-service
+    env_file: .env
+    environment:
+      PORT: ${REPORT_SERVICE_PORT:-3006}
+      REDIS_HOST: redis
+      DB_SERVICE_URL: http://db-service:8080
+    ports:
+      - "${REPORT_SERVICE_PORT:-3006}:${REPORT_SERVICE_PORT:-3006}"
+    depends_on:
+      redis:
+        condition: service_healthy
+      db-service:
+        condition: service_healthy
+    networks:
+      - workbench
+
+  mock-playground:
+    build:
+      context: ../services/automation-mock-playground-service
+      dockerfile: Dockerfile
+    container_name: workbench-mock-playground
+    env_file: .env
+    environment:
+      PORT: ${MOCK_PLAYGROUND_PORT:-3010}
+      REDIS_HOST: redis
+    ports:
+      - "${MOCK_PLAYGROUND_PORT:-3010}:${MOCK_PLAYGROUND_PORT:-3010}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - workbench
+
+  # ── Tier 3: UI (depends on backend services) ───────────────────────────────
+  ui-backend:
+    build:
+      context: ../services/automation-frontend/backend
+      dockerfile: Dockerfile
+    container_name: workbench-ui-backend
+    env_file: .env
+    environment:
+      PORT: ${UI_BACKEND_PORT:-3007}
+      CONFIG_SERVICE_URL: http://config-service:${CONFIG_SERVICE_PORT:-3001}
+      REPORT_SERVICE_URL: http://report-service:${REPORT_SERVICE_PORT:-3006}
+      REDIS_HOST: redis
+    ports:
+      - "${UI_BACKEND_PORT:-3007}:${UI_BACKEND_PORT:-3007}"
+    depends_on:
+      - config-service
+      - report-service
+      - redis
+    networks:
+      - workbench
+
+  ui-frontend:
+    build:
+      context: ../services/automation-frontend/frontend
+      dockerfile: Dockerfile
+    container_name: workbench-ui-frontend
+    env_file: .env
+    ports:
+      - "${UI_FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - ui-backend
+    networks:
+      - workbench
+
+  # ── Backoffice (admin UI, optional) ────────────────────────────────────────
+  backoffice-backend:
+    build:
+      context: ../services/automation-backoffice/backend
+      dockerfile: Dockerfile
+    container_name: workbench-backoffice-backend
+    env_file: .env
+    environment:
+      PORT: ${BACKOFFICE_BACKEND_PORT:-5200}
+      REDIS_HOST: redis
+    ports:
+      - "${BACKOFFICE_BACKEND_PORT:-5200}:${BACKOFFICE_BACKEND_PORT:-5200}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - workbench
+    profiles: ["backoffice"]
+
+  backoffice-frontend:
+    build:
+      context: ../services/automation-backoffice/frontend
+      dockerfile: Dockerfile
+    container_name: workbench-backoffice-frontend
+    env_file: .env
+    ports:
+      - "${BACKOFFICE_FRONTEND_PORT:-5100}:80"
+    depends_on:
+      - backoffice-backend
+    networks:
+      - workbench
+    profiles: ["backoffice"]
+
+  # ── Beckn-onix gateway (optional protocol layer) ───────────────────────────
+  beckn-onix:
+    build:
+      context: ../libs/automation-beckn-onix
+      dockerfile: Dockerfile
+    container_name: workbench-beckn-onix
+    env_file: .env
+    ports:
+      - "${BECKN_ONIX_PORT:-8081}:8081"
+    networks:
+      - workbench
+    profiles: ["onix"]
+
+volumes:
+  yugabyte_data:
+
+networks:
+  workbench:
+    driver: bridge

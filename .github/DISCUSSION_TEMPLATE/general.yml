@@ -1,0 +1,20 @@
+title: ""
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome! This is the right place for open-ended discussion about the ONDC Automation Workbench.
+
+        Before posting, please:
+        - Search existing discussions to avoid duplicates.
+        - Use a specific issue template if you're filing a bug or feature request.
+        - Be respectful and follow the [Code of Conduct](../CODE_OF_CONDUCT.md).
+
+  - type: textarea
+    id: topic
+    attributes:
+      label: What would you like to discuss?
+      description: Frame the question or topic. Include context — what you've tried, what you've read, what's unclear.
+    validations:
+      required: true

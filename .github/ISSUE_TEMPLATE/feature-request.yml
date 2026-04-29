@@ -1,0 +1,32 @@
+name: Feature Request
+description: Suggest an enhancement
+labels: ["type/feature", "status/needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should this work? Sketch APIs, UX, or wiring as needed.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - automation-specifications
+        - automation-frontend / UI
+        - Platform services (config, db, form, recorder, report)
+        - Mock and playground services
+        - Build tooling (api-service-generator, beckn-onix)
+        - Libraries (mock-runner, validation-compiler, utils, cache, logger)
+        - Documentation
+        - Local-dev tooling (docker-compose, scripts)
+        - Other

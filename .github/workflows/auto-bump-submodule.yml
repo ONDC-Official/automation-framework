@@ -1,0 +1,75 @@
+name: Auto-bump submodule
+
+# Triggered by repository_dispatch from a child repo's notify-parent.yml workflow.
+# Identifies the matching submodule path, advances its pointer to the new SHA,
+# and opens a PR with the bump.
+
+on:
+  repository_dispatch:
+    types: [submodule-updated]
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Identify submodule path from dispatch payload
+        id: find
+        run: |
+          REPO_FULL="${{ github.event.client_payload.repo }}"
+          REPO_NAME="${REPO_FULL#*/}"
+          echo "repo_name=${REPO_NAME}" >> "$GITHUB_OUTPUT"
+
+          SUBMOD_PATH=$(git config --file .gitmodules --get-regexp 'submodule\..*\.url' \
+            | grep "${REPO_NAME}.git" \
+            | head -1 \
+            | sed 's/submodule\.\(.*\)\.url.*/\1/')
+
+          if [ -z "$SUBMOD_PATH" ]; then
+            echo "::error::No submodule found for ${REPO_NAME}"
+            exit 1
+          fi
+
+          echo "submodule_path=${SUBMOD_PATH}" >> "$GITHUB_OUTPUT"
+          echo "Found submodule at: ${SUBMOD_PATH}"
+
+      - name: Update submodule pointer
+        run: |
+          cd "${{ steps.find.outputs.submodule_path }}"
+          git fetch origin
+          git checkout "${{ github.event.client_payload.sha }}"
+          cd "${{ github.workspace }}"
+
+      - name: Create PR with updated pointer
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: |
+            chore: bump ${{ steps.find.outputs.repo_name }} to ${{ github.event.client_payload.sha }}
+
+            Source: ${{ github.event.client_payload.message }}
+          branch: auto-bump/${{ steps.find.outputs.repo_name }}
+          delete-branch: true
+          title: "chore: bump ${{ steps.find.outputs.repo_name }}"
+          body: |
+            Automated submodule update.
+
+            | Field | Value |
+            |---|---|
+            | **Source repo** | `${{ github.event.client_payload.repo }}` |
+            | **Commit** | `${{ github.event.client_payload.sha }}` |
+            | **Branch** | `${{ github.event.client_payload.ref }}` |
+            | **Message** | ${{ github.event.client_payload.message }} |
+          labels: |
+            auto-bump
+            submodule-update

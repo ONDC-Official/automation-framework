@@ -1,0 +1,41 @@
+name: New Domain Specification
+description: Propose adding a new ONDC domain to the workbench
+labels: ["tier/specification", "type/feature"]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Domain code
+      description: e.g., FIS14, TRV12, RET15
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: e.g., 2.0.0, 1.2.5
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Domain description
+      description: What does this domain cover? Which actors and flows are involved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec-source
+    attributes:
+      label: Specification source
+      description: Link to the ONDC domain specification document(s).
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies on other domains or libraries
+      description: Does this build on top of an existing domain spec? Need a new validation rule? List anything the workbench needs to support first.

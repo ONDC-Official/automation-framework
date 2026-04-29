@@ -1,0 +1,57 @@
+name: Integration test
+
+# Boots the full stack from published GHCR images and runs health checks.
+# Triggered on pushes that touch any submodule or local-dev tooling.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/**'
+      - 'specs/**'
+      - 'libs/**'
+      - 'local-dev/**'
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Start full stack
+        working-directory: local-dev
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.images.yml up -d
+          echo "Waiting for services to start..."
+          sleep 60
+
+      - name: Health check all services
+        run: ./scripts/health-check.sh
+
+      - name: Run smoke tests
+        run: |
+          # Verify frontend is accessible
+          curl -sf http://localhost:3000/health || exit 1
+          echo "Frontend: OK"
+
+          # Verify config service
+          curl -sf http://localhost:3001/health || exit 1
+          echo "Config service: OK"
+
+          # Add more endpoint checks as services are onboarded.
+
+      - name: Collect logs on failure
+        if: failure()
+        working-directory: local-dev
+        run: docker compose -f docker-compose.images.yml logs --tail=200
+
+      - name: Teardown
+        if: always()
+        working-directory: local-dev
+        run: docker compose -f docker-compose.images.yml down -v

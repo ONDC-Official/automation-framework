@@ -1,0 +1,34 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Hot-reload override template.
+#
+# Copy to docker-compose.override.yml (gitignored) and uncomment the service
+# you're working on. The override is automatically picked up by:
+#   docker compose up
+# ──────────────────────────────────────────────────────────────────────────────
+
+# services:
+#   config-service:
+#     volumes:
+#       - ../services/automation-config-service/src:/app/src
+#       - ../services/automation-config-service/package.json:/app/package.json
+#     command: npm run dev
+#     environment:
+#       NODE_ENV: development
+#
+#   form-service:
+#     volumes:
+#       - ../services/automation-form-service/src:/app/src
+#     command: npm run dev
+#
+#   recorder-service:
+#     volumes:
+#       - ../services/automation-recorder-service:/app
+#     command: go run .
+#
+#   ui-frontend:
+#     volumes:
+#       - ../services/automation-frontend/frontend/src:/app/src
+#       - ../services/automation-frontend/frontend/index.html:/app/index.html
+#     command: npm run dev -- --host 0.0.0.0
+#     ports:
+#       - "${UI_FRONTEND_PORT:-3000}:5173"

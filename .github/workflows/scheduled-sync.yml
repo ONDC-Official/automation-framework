@@ -1,0 +1,45 @@
+name: Weekly submodule sync
+
+# Updates every submodule pointer to the latest commit on its tracked branch
+# and opens a single sync PR if anything changed.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Update all submodules to latest tracked branch
+        run: |
+          git submodule update --init --recursive --remote
+          echo "=== Submodule status ==="
+          git submodule foreach 'echo "$name: $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"'
+
+      - name: Create sync PR if changes exist
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: "chore: weekly submodule sync"
+          branch: auto-sync/weekly
+          delete-branch: true
+          title: "chore: weekly submodule sync"
+          body: |
+            Automated weekly sync of all submodule pointers to the latest tracked branch.
+
+            Review the submodule diff to verify compatibility before merging.
+          labels: |
+            auto-sync
+            submodule-update

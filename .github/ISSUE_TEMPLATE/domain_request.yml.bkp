@@ -1,0 +1,80 @@
+name: New ONDC Domain / Version Request
+description: Request support for a new ONDC domain or a new version of an existing domain
+title: "[Domain] Add support for <DOMAIN>:<VERSION>"
+labels: [new-domain, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request support for a new ONDC domain (e.g., `ONDC:AGR10`) or a new version of an existing domain (e.g., `ONDC:TRV11` v2.2.0).
+
+        Protocol Workbench supports a domain through three layers:
+        1. **Spec** — YAML files in `automation-specifications` (per-action schemas + L1 rules)
+        2. **Mock templates** — YAML response templates in `automation-config-service`
+        3. **Report validators** — TypeScript validators in `automation-report-service`
+
+        You can contribute any or all three layers.
+
+  - type: input
+    id: domain_code
+    attributes:
+      label: Domain code
+      placeholder: "e.g., ONDC:AGR10"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain_type
+    attributes:
+      label: Domain category
+      options:
+        - Retail / Grocery
+        - Mobility / Transit
+        - Financial Services
+        - Logistics
+        - Agriculture
+        - Healthcare
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec_link
+    attributes:
+      label: Specification reference
+      description: Link to the ONDC specification document, GitHub repo, or Google Drive folder for this domain.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: What are you contributing?
+      options:
+        - label: Spec YAML (for `automation-specifications` repo)
+        - label: Mock YAML templates (for `automation-config-service`)
+        - label: Report validators (for `automation-report-service`)
+        - label: Just requesting — not contributing code
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Key use cases / flows
+      description: What buyer-seller flows should be testable? List the main scenarios.
+      placeholder: |
+        - B2B order flow: search → select → init → confirm → status
+        - Cancellation flow: cancel → on_cancel
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any constraints, dependencies on other domains, or implementation notes

@@ -1,0 +1,79 @@
+[submodule "specs/automation-specifications"]
+	path = specs/automation-specifications
+	url = https://github.com/ONDC-Official/automation-specifications.git
+	branch = main
+
+[submodule "services/automation-frontend"]
+	path = services/automation-frontend
+	url = https://github.com/ONDC-Official/automation-frontend.git
+	branch = main
+
+[submodule "services/automation-backoffice"]
+	path = services/automation-backoffice
+	url = https://github.com/ONDC-Official/automation-backoffice.git
+	branch = main
+
+[submodule "services/automation-config-service"]
+	path = services/automation-config-service
+	url = https://github.com/ONDC-Official/automation-config-service.git
+	branch = main
+
+[submodule "services/automation-db"]
+	path = services/automation-db
+	url = https://github.com/ONDC-Official/automation-db.git
+	branch = main
+
+[submodule "services/automation-form-service"]
+	path = services/automation-form-service
+	url = https://github.com/ONDC-Official/automation-form-service.git
+	branch = main
+
+[submodule "services/automation-recorder-service"]
+	path = services/automation-recorder-service
+	url = https://github.com/ONDC-Official/automation-recorder-service.git
+	branch = main
+
+[submodule "services/automation-report-service"]
+	path = services/automation-report-service
+	url = https://github.com/ONDC-Official/automation-report-service.git
+	branch = main
+
+[submodule "services/automation-mock-playground-service"]
+	path = services/automation-mock-playground-service
+	url = https://github.com/ONDC-Official/automation-mock-playground-service.git
+	branch = main
+
+[submodule "libs/automation-cache"]
+	path = libs/automation-cache
+	url = https://github.com/ONDC-Official/automation-cache.git
+	branch = main
+
+[submodule "libs/automation-logger-package"]
+	path = libs/automation-logger-package
+	url = https://github.com/ONDC-Official/automation-logger-package.git
+	branch = main
+
+[submodule "libs/automation-mock-runner-lib"]
+	path = libs/automation-mock-runner-lib
+	url = https://github.com/ONDC-Official/automation-mock-runner-lib.git
+	branch = main
+
+[submodule "libs/automation-validation-compiler"]
+	path = libs/automation-validation-compiler
+	url = https://github.com/ONDC-Official/automation-validation-compiler.git
+	branch = main
+
+[submodule "libs/automation-utils"]
+	path = libs/automation-utils
+	url = https://github.com/ONDC-Official/automation-utils.git
+	branch = main
+
+[submodule "libs/automation-api-service-generator"]
+	path = libs/automation-api-service-generator
+	url = https://github.com/ONDC-Official/automation-api-service-generator.git
+	branch = main
+
+[submodule "libs/automation-beckn-onix"]
+	path = libs/automation-beckn-onix
+	url = https://github.com/ONDC-Official/automation-beckn-onix.git
+	branch = main

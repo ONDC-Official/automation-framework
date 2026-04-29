@@ -1,34 +1,36 @@
-## What does this PR do?
+## Summary
 
-<!-- One clear sentence. What problem does it solve or what does it add? -->
+<!-- Brief description of what this PR does. Link the related issue if any. -->
 
-## Type of change
+## Type
 
-- [ ] Bug fix (non-breaking change that fixes an issue)
-- [ ] New feature (non-breaking change that adds functionality)
-- [ ] Breaking change (fix or feature that changes existing behavior)
-- [ ] Documentation update
-- [ ] Refactor (no behavior change, code quality improvement)
-- [ ] CI / tooling change
+- [ ] Submodule update (auto-bump)
+- [ ] Documentation change
+- [ ] Local-dev tooling (docker-compose, scripts, .env.example)
+- [ ] CI/CD workflow change
+- [ ] Architecture / ADR
+- [ ] Other: ___
 
-## Affected service(s)
+## Affected components
 
 <!-- Check all that apply -->
-- [ ] `automation-report-service`
-- [ ] `automation-mock-playground-service`
-- [ ] `automation-recorder-service`
-- [ ] `automation-beckn-onix`
-- [ ] `automation-config-service`
-- [ ] `automation-db`
-- [ ] `automation-form-service`
-- [ ] `automation-frontend`
-- [ ] `automation-backoffice`
-- [ ] `automation-logger` (shared package)
-- [ ] `automation-mock-runner` (shared package)
-- [ ] `automation-validation-compiler` (shared package)
-- [ ] `automation-utils/build-tools` (shared package)
-- [ ] `automation-api-service-generator`
-- [ ] Other: ___________
+- [ ] `specs/automation-specifications`
+- [ ] `services/automation-frontend`
+- [ ] `services/automation-backoffice`
+- [ ] `services/automation-config-service`
+- [ ] `services/automation-db`
+- [ ] `services/automation-form-service`
+- [ ] `services/automation-recorder-service`
+- [ ] `services/automation-report-service`
+- [ ] `services/automation-mock-playground-service`
+- [ ] `libs/automation-beckn-onix`
+- [ ] `libs/automation-mock-runner-lib`
+- [ ] `libs/automation-validation-compiler`
+- [ ] `libs/automation-utils`
+- [ ] `libs/automation-cache`
+- [ ] `libs/automation-logger-package`
+- [ ] `libs/automation-api-service-generator`
+- [ ] Cross-cutting / parent-repo only
 
 ## Related issue
 
@@ -38,19 +40,17 @@ Closes #<!-- issue number -->
 
 <!-- Describe how you verified the change works. What did you run? -->
 
-- [ ] Unit tests pass (`npm test` / `go test ./...`)
-- [ ] Lint passes (`npm run lint`)
-- [ ] Type check passes (`npm run type-check` / `tsc --noEmit`)
-- [ ] Tested end-to-end locally against the full stack
-- [ ] If shared package changed: rebuilt with `npm run build -w <package>` and verified consumers
+- [ ] `cd local-dev && docker compose up` builds and boots cleanly
+- [ ] `./scripts/health-check.sh` passes
+- [ ] If submodule pointer moved: downstream `notify-parent.yml` payload was verified
 
 ## Checklist
 
 - [ ] No `.env` files or secrets committed
-- [ ] No hand-edited generated files (files under `*/generated/` or `build-output/`)
-- [ ] If shared package changed: downstream consumers still build and pass tests
-- [ ] Documentation updated if behavior changed (service README in `ALL_Readme/`, `ARCHITECTURE.md`, `LOCAL_SETUP.md`)
-- [ ] If new ONDC domain added: domain listed in `automation-report-service` README
+- [ ] No hardcoded internal URLs or credentials introduced
+- [ ] Documentation updated (README / ARCHITECTURE / SELF-HOSTING / ADR) if behavior changed
+- [ ] If a new submodule was added: present in `.gitmodules`, `local-dev/docker-compose.yml`, `clone-all.sh`, `health-check.sh`
+- [ ] If a new ONDC domain was added: listed in `docs/adding-a-new-domain.md` and the architecture matrix
 
 ## Screenshots / logs (if relevant)
 

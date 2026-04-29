@@ -1,0 +1,59 @@
+name: Bug Report
+description: Report a bug in the Automation Workbench
+labels: ["type/bug", "status/needs-triage"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - automation-specifications
+        - automation-frontend
+        - automation-backoffice
+        - automation-config-service
+        - automation-db
+        - automation-form-service
+        - automation-recorder-service
+        - automation-report-service
+        - automation-mock-playground-service
+        - automation-beckn-onix
+        - automation-mock-runner-lib
+        - automation-validation-compiler
+        - automation-utils
+        - automation-cache
+        - automation-logger-package
+        - automation-api-service-generator
+        - Other / Cross-component
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue. Paste relevant logs in fenced blocks.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / Commit SHA
+      description: Which release tag or commit SHA exhibits the bug?
+
+  - type: dropdown
+    id: env
+    attributes:
+      label: Environment
+      options:
+        - Local docker compose (build from source)
+        - Local docker compose (GHCR images)
+        - Self-hosted Kubernetes
+        - Other

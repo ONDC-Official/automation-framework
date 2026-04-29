@@ -1,0 +1,20 @@
+name: Question
+description: Ask a question about using or contributing to the workbench
+labels: ["type/question", "status/needs-triage"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: |
+        Before opening, consider posting in GitHub Discussions instead — questions
+        often get faster answers there. Use this template if your question requires
+        tracking (e.g., a documentation gap that should be fixed).
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What were you trying to do? What docs did you consult? What was unclear?
