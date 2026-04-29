@@ -1,0 +1,48 @@
+[submodule "automation-db"]
+	path = services/automation-db
+	url = https://github.com/ONDC-Official/automation-db.git
+[submodule "automation-frontend"]
+	path = services/automation-frontend
+	url = https://github.com/ONDC-Official/automation-frontend.git
+[submodule "automation-backoffice"]
+	path = services/automation-backoffice
+	url = https://github.com/ONDC-Official/automation-backoffice.git
+[submodule "automation-report-service"]
+	path = services/automation-report-service
+	url = https://github.com/ONDC-Official/automation-report-service.git
+[submodule "automation-cache"]
+	path = libs/automation-cache
+	url = https://github.com/ONDC-Official/automation-cache.git
+[submodule "automation-logger"]
+	path = libs/automation-logger-package
+	url = https://github.com/ONDC-Official/automation-logger-package.git
+[submodule "automation-mock-runner"]
+	path = libs/automation-mock-runner-lib
+	url = https://github.com/ONDC-Official/automation-mock-runner-lib.git
+[submodule "automation-validation-compiler"]
+	path = libs/automation-validation-compiler
+	url = https://github.com/ONDC-Official/automation-validation-compiler.git
+[submodule "automation-utils"]
+	path = libs/automation-utils
+	url = https://github.com/ONDC-Official/automation-utils.git
+[submodule "automation-api-service-generator"]
+	path = libs/automation-api-service-generator
+	url = https://github.com/ONDC-Official/automation-api-service-generator.git
+[submodule "automation-beckn-onix"]
+	path = libs/automation-beckn-onix
+	url = https://github.com/ONDC-Official/automation-beckn-onix.git
+[submodule "services/config"]
+	path = services/automation-config-service
+	url = https://github.com/ONDC-Official/automation-config-service.git
+[submodule "services/form"]
+	path = services/automation-form-service
+	url = https://github.com/ONDC-Official/automation-form-service.git
+[submodule "services/mock-playground"]
+	path = services/automation-mock-playground-service
+	url = https://github.com/ONDC-Official/automation-mock-playground-service.git
+[submodule "services/recorder"]
+	path = services/automation-recorder-service
+	url = https://github.com/ONDC-Official/automation-recorder-service.git
+[submodule "specs"]
+	path = specs/automation-specifications
+	url = https://github.com/ONDC-Official/automation-specifications.git

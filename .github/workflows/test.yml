@@ -1,7 +1,0 @@
-# Placeholder file — remove after Phase 1.1 lands.
-# The real workflows live alongside this file:
-#   - auto-bump-submodule.yml
-#   - scheduled-sync.yml
-#   - integration-test.yml
-# This file exists only because the session sandbox cannot delete files;
-# remove it manually with:  rm .github/workflows/test.yml
