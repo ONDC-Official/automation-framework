@@ -1,9 +1,3 @@
-[submodule "automation-api-service"]
-	path = automation-api-service
-	url = https://github.com/ONDC-Official/automation-api-service.git
-[submodule "automation-mock-service"]
-	path = automation-mock-service
-	url = https://github.com/ONDC-Official/automation-mock-service.git
 [submodule "automation-db"]
 	path = automation-db
 	url = https://github.com/ONDC-Official/automation-db.git
@@ -16,9 +10,21 @@
 [submodule "automation-report-service"]
 	path = automation-report-service
 	url = https://github.com/ONDC-Official/automation-report-service.git
-[submodule "automation-cache"]
-	path = automation-cache
-	url = https://github.com/ONDC-Official/automation-cache.git
-[submodule "automation-monitoring"]
-	path = automation-monitoring
-	url = https://github.com/ONDC-Official/automation-monitoring.git
+[submodule "automation-form-service"]
+	path = automation-form-service
+	url = https://github.com/ONDC-Official/automation-form-service.git
+[submodule "automation-mock-playground-service"]
+	path = automation-mock-playground-service
+	url = https://github.com/ONDC-Official/automation-mock-playground-service.git
+[submodule "automation-recorder-service"]
+	path = automation-recorder-service
+	url = https://github.com/ONDC-Official/automation-recorder-service.git
+[submodule "automation-user-management"]
+	path = automation-user-management
+	url = https://github.com/ONDC-Official/automation-user-management.git
+[submodule "automation-report-pramaan"]
+	path = automation-report-pramaan
+	url = https://github.com/ONDC-Official/automation-report-pramaan.git
+[submodule "automation-registry-service"]
+	path = automation-registry-service
+	url = https://github.com/ONDC-Official/automation-registry-service.git
