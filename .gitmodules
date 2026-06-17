@@ -6,3 +6,7 @@
 	path = automation-backoffice
 	url = https://github.com/ONDC-Official/automation-backoffice.git
 	branch = main
+[submodule "automation-specifications"]
+	path = automation-specifications
+	url = https://github.com/ONDC-Official/automation-specifications.git
+	branch = main

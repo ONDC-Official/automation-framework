@@ -47,6 +47,61 @@ docker compose build ui-frontend backoffice-frontend
 docker compose up -d ui-frontend backoffice-frontend
 ```
 
+### Running a domain API service
+
+Each ONDC domain/version (FIS12, RET10, TRV11, etc.) is a separate API service generated from a spec branch. The script clones the spec locally so you can edit both the spec config and the generated code before building.
+
+**1. List available spec branches:**
+```bash
+./scripts/build-api-service.sh
+```
+
+**2. Run the script for the branch you want:**
+```bash
+./scripts/build-api-service.sh draft-FIS12-2.3.0
+# or a release branch:
+./scripts/build-api-service.sh release-eks-RET10-1.2.5
+```
+
+The script:
+- Clones `automation-specifications` into `api-service/` (first run) or fetches the new branch (subsequent runs)
+- Parses `api-service/config/` → `build.yaml` and validates it
+- Runs `@ondc/api-service-generator` to produce `api-service/build-output/`
+- Pushes spec data to the local `db-service` (if running)
+- Writes `docker-compose.api.yml` pointing to `api-service/build-output/` as the Docker build context
+
+**3. Fill in secrets:**
+```
+docker-env/api-service-common.env  ← replace *_change_me values
+```
+
+**4. Build the Docker image and start:**
+```bash
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
+```
+
+The service is reachable at **http://localhost:3032** and at `http://api-service:7039` from other containers on the network.
+
+---
+
+**Editing generated code** (no spec change needed):
+```bash
+# Edit api-service/build-output/ directly, then rebuild:
+docker compose -f docker-compose.yml -f docker-compose.api.yml build
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d
+```
+
+**Editing the spec config** (regenerates code from scratch):
+```bash
+# Edit api-service/config/, then re-run the script:
+./scripts/build-api-service.sh draft-FIS12-2.3.0
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
+```
+
+> `api-service/` and `docker-compose.api.yml` are git-ignored. Only one domain service can run on port 3032 at a time.
+
+---
+
 ### Port reference
 
 | Service | URL |
@@ -63,6 +118,7 @@ docker compose up -d ui-frontend backoffice-frontend
 | User Management | http://localhost:8082 |
 | Registry Service | http://localhost:8080 |
 | Jaeger UI | http://localhost:16686 |
+| Domain API Service | http://localhost:3032 |
 
 ## Experiencing it
 You can experience the Protocol Workbench here: https://workbench.ondc.tech/home
