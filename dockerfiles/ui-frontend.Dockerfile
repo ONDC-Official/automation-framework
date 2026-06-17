@@ -1,4 +1,4 @@
-FROM node:18 AS builder
+FROM node:20 AS builder
 WORKDIR /app
 COPY ./automation-frontend/frontend/package*.json ./
 RUN npm install
@@ -17,7 +17,7 @@ ENV VITE_BAP_URL=$VITE_BAP_URL \
     VITE_DEVELOPER_GUIDE_BACKEND_URL=$VITE_DEVELOPER_GUIDE_BACKEND_URL
 RUN npm run build
 
-FROM node:18-slim
+FROM node:20-slim
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=builder /app/dist /app/dist

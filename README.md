@@ -17,6 +17,53 @@ Protocol Workbench offers guided assistance for experiencing open API based tran
 - Schema Validation Tool – Validates API payloads against ONDC specifications, highlighting inconsistencies / missing fields. NPs can simply Paste/ Upload their API json payloads. Based on the payload pasted, the tool takes the domain and the version for testing compliance and checks for errors in API schema, data types, required fields, enums and conditions as applicable by the model implementation. NPs can review errors on missing or incorrect fields and fix issues and re-test as required 
 - Flow Testing Suite – Simulates end-to-end transactions to verify adherence to protocol flows and expected behavior. It enables testing of complete ONDC workflows across buyer and seller interactions in the respective domain. Enter your details to get started with the testing. Once entered, based on the use case selected, flows specific to the domain/ use case will be available to initiate the flow testing process. Process & send payloads as per the flow and issues, if any, are highlighted as you proceed step by step.
 
+## Local Development Setup
+
+### Prerequisites
+- Docker & Docker Compose
+- Git
+
+### First-time setup
+
+Clone and initialise submodules (pinned to the tested commit):
+```bash
+git clone <this-repo>
+cd automation-framework
+git submodule update --init
+```
+
+Build and start all services:
+```bash
+docker compose build ui-frontend backoffice-frontend
+docker compose up -d
+```
+
+### Pulling latest frontend code
+
+The frontend submodules (`automation-frontend`, `automation-backoffice`) track the `main` branch of their upstream repos. To update them to the latest code before rebuilding:
+```bash
+git submodule update --remote --merge
+docker compose build ui-frontend backoffice-frontend
+docker compose up -d ui-frontend backoffice-frontend
+```
+
+### Port reference
+
+| Service | URL |
+|---------|-----|
+| UI Frontend | http://localhost:3035 |
+| UI Backend | http://localhost:3034 |
+| Backoffice Frontend | http://localhost:5100 |
+| Backoffice Backend | http://localhost:5200 |
+| Mock Service | http://localhost:3031 |
+| Report Service | http://localhost:3000 |
+| Form Service | http://localhost:3300 |
+| DB Service | http://localhost:5001 |
+| Config Service | http://localhost:5556 |
+| User Management | http://localhost:8082 |
+| Registry Service | http://localhost:8080 |
+| Jaeger UI | http://localhost:16686 |
+
 ## Experiencing it
 You can experience the Protocol Workbench here: https://workbench.ondc.tech/home
 

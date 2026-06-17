@@ -1,6 +1,8 @@
 [submodule "automation-frontend"]
 	path = automation-frontend
 	url = https://github.com/ONDC-Official/automation-frontend.git
+	branch = main
 [submodule "automation-backoffice"]
 	path = automation-backoffice
 	url = https://github.com/ONDC-Official/automation-backoffice.git
+	branch = main
