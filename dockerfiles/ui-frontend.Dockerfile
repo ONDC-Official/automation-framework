@@ -1,0 +1,25 @@
+FROM node:18 AS builder
+WORKDIR /app
+COPY ./automation-frontend/frontend/package*.json ./
+RUN npm install
+COPY ./automation-frontend/frontend/ ./
+ARG VITE_BAP_URL
+ARG VITE_BACKEND_URL
+ARG VITE_BASE_URL
+ARG VITE_BPP_URL
+ARG VITE_DB_SERVICE_API_KEY
+ARG VITE_DEVELOPER_GUIDE_BACKEND_URL
+ENV VITE_BAP_URL=$VITE_BAP_URL \
+    VITE_BACKEND_URL=$VITE_BACKEND_URL \
+    VITE_BASE_URL=$VITE_BASE_URL \
+    VITE_BPP_URL=$VITE_BPP_URL \
+    VITE_DB_SERVICE_API_KEY=$VITE_DB_SERVICE_API_KEY \
+    VITE_DEVELOPER_GUIDE_BACKEND_URL=$VITE_DEVELOPER_GUIDE_BACKEND_URL
+RUN npm run build
+
+FROM node:18-slim
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=builder /app/dist /app/dist
+EXPOSE 5001
+CMD ["serve", "-s", "dist", "-l", "5001"]

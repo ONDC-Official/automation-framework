@@ -1,146 +1,242 @@
 version: "3.8"
 
-
 services:
-  automation-db:
-    build: 
-      context: ./automation-db
-      dockerfile: dockerfile.sdk
+  mongo:
+    image: mongo:6
+    container_name: mongo
     ports:
-      - 8080:8080
-    depends_on:
-      - yugabyte
-    env_file:
-      - ./automation-db/docker.env
-    networks:
-      - automation-network 
-    entrypoint: >
-      /bin/bash -c "
-        ./wait-for-it.sh yugabyte 5433 60 &&
-        exec java -jar app.jar
-      "
+      - "27017:27017"
     volumes:
-      - ./scripts/wait-for-it.sh:/app/yugabyte-integration/wait-for-it.sh
-      
-
-  automation-api-service:
-    build: ./automation-api-service
-    ports:
-      - "3032:3000"
-    restart: always
+      - mongo_data:/data/db
     networks:
       - automation-network
-    depends_on:
-      - redis
-    env_file:
-      - ./docker-env/api-service.env
-
-  automation-mock-service:
-    build: ./automation-mock-service
-    ports:
-      - "3031:8000"
-    restart: always
-    networks:
-      - automation-network
-    depends_on:
-      - redis
-    env_file:
-      - ./docker-env/mock-service.env
-
-  automation-report-service:
-    build: ./automation-report-service
-    ports:
-      - "3000:3000"
-    networks:
-      - automation-network
-    depends_on:
-      - redis
-    env_file:
-      - ./docker-env/report-service.env
-
-  automation-ui-backend:
-    build:
-      context: ./automation-frontend/backend
-      dockerfile: Dockerfile
-    container_name: automation-ui-backend
-    ports:
-      - "3034:5000"
-    env_file:
-      - ./docker-env/automation-backend.env
-    restart: always
-    networks:
-      - automation-network
-    depends_on:
-      - redis
-
-  automation-ui-frontend:
-    build:
-      context: ./automation-frontend/frontend
-      dockerfile: Dockerfile.sdk
-    container_name: automation-ui-frontend
-    ports:
-      - "3035:5001"
-    env_file:
-      - ./automation-frontend/frontend/docker.env
-    restart: always
-    networks:
-      - automation-network
-
-  backoffice-backend:
-    restart: always
-    build: ./automation-backoffice/backend
-    ports:
-      - 5200:5000
-    env_file:
-      - ./docker-env/back-office.backend.env
-    depends_on:
-      - redis
-    networks:
-      - automation-network
-
-  backoffice-frontend:
-    restart: always
-    build: 
-      context: ./automation-backoffice/frontend
-      dockerfile: Dockerfile.sdk
-    ports:
-      - 5100:5001   
 
   redis:
-    image: redis:6.2
+    image: redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
     networks:
-      - automation-network 
+      - automation-network
 
-
-  yugabyte:
-    image: yugabytedb/yugabyte:latest
-    container_name: yugabyte
-    # command: [ "/home/yugabyte/bin/yugabyted", "start", "--base_dir=/mnt/data", "--daemon=false" ]
-    command: >
-      /bin/bash -c
-      "/home/yugabyte/bin/yugabyted start --base_dir=/mnt/data --daemon=false &
-      sleep 10 &&
-      bash /mnt/scripts/init-db.sh &&
-      tail -f /dev/null"
-
-
+  jaeger:
+    image: jaegertracing/all-in-one:1.57.0
+    container_name: jaeger
     ports:
-      - "7001:7000"  # Master UI
-      - "9000:9000"  # TServer UI
-      - "5433:5433"  # PostgreSQL API
-      - "9042:9042"  # YCQL API
-    volumes:
-      - yugabyte_data:/mnt/data
-      - ./scripts/init-db.sh:/mnt/scripts/init-db.sh # Mount the init script
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
     networks:
-      - automation-network 
+      - automation-network
 
+  registry-service:
+    image: ghcr.io/ondc-official/automation-registry:dev-1.0.2
+    platform: linux/amd64
+    container_name: registry-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./docker-env/registry-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - mongo
+
+  db-service:
+    image: ghcr.io/ondc-official/automation-db:dev-1.0.0-9ce8c80
+    platform: linux/amd64
+    container_name: db-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./docker-env/db-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - mongo
+      - jaeger
+
+  config-service:
+    image: ghcr.io/ondc-official/automation-config-service:prod-1.0.0-0d20f10
+    platform: linux/amd64
+    container_name: config-service
+    ports:
+      - "5556:5556"
+    env_file:
+      - ./docker-env/config-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - db-service
+      - jaeger
+
+  playground-mock-service:
+    image: ghcr.io/ondc-official/automation-mock-playground-service:dev-1.0.0-250ff4e
+    platform: linux/amd64
+    container_name: playground-mock-service
+    ports:
+      - "3031:3000"
+    env_file:
+      - ./docker-env/playground-mock-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - config-service
+
+  recorder-service:
+    image: ghcr.io/ondc-official/automation-recorder-service:dev-0.0.3
+    platform: linux/amd64
+    container_name: recorder-service
+    ports:
+      - "8090:8090"
+      - "8089:8089"
+    env_file:
+      - ./docker-env/recorder-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - db-service
+
+  report-pramaan-buyer:
+    image: ghcr.io/ondc-official/automation-report-pramaan-buyer:dev-0.0.7
+    platform: linux/amd64
+    container_name: report-pramaan-buyer
+    ports:
+      - "3005:3005"
+    env_file:
+      - ./docker-env/report-pramaan-buyer.env
+    networks:
+      - automation-network
+    depends_on:
+      - mongo
+
+  report-pramaan-seller:
+    image: ghcr.io/ondc-official/automation-report-pramaan-seller:dev-0.0.7
+    platform: linux/amd64
+    container_name: report-pramaan-seller
+    ports:
+      - "3006:3005"
+    env_file:
+      - ./docker-env/report-pramaan-seller.env
+    networks:
+      - automation-network
+    depends_on:
+      - mongo
+
+  report-service:
+    image: ghcr.io/ondc-official/automation-report-service:dev-1.0.0-398efa2
+    platform: linux/amd64
+    container_name: report-service
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./docker-env/report-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - db-service
+      - report-pramaan-buyer
+      - report-pramaan-seller
+      - jaeger
+
+  automation-user-management:
+    image: ghcr.io/ondc-official/automation-user-management:dev-0.0.0-3567db7
+    platform: linux/amd64
+    container_name: automation-user-management
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./docker-env/automation-user-management.env
+    networks:
+      - automation-network
+    depends_on:
+      - mongo
+
+  form-service:
+    image: ghcr.io/ondc-official/automation-form-service:dev-1.0.0-7792084
+    platform: linux/amd64
+    container_name: form-service
+    ports:
+      - "3300:3300"
+    env_file:
+      - ./docker-env/form-service.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+
+  backoffice-backend:
+    image: ghcr.io/ondc-official/automation-backoffice-backend:dev-1.0.0-2439274
+    platform: linux/amd64
+    container_name: backoffice-backend
+    ports:
+      - "5200:5000"
+    env_file:
+      - ./docker-env/backoffice-backend.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - db-service
+      - jaeger
+
+  backoffice-frontend:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/backoffice-frontend.Dockerfile
+      args:
+        VITE_BACKEND_URL: http://localhost:5200
+        VITE_BASE_URL: /backoffice
+    container_name: backoffice-frontend
+    ports:
+      - "5100:5001"
+    networks:
+      - automation-network
+
+  ui-backend:
+    image: ghcr.io/ondc-official/automation-frontend/backend:dev-0.0.0-a5c34b3
+    platform: linux/amd64
+    container_name: ui-backend
+    ports:
+      - "3034:5000"
+    env_file:
+      - ./docker-env/ui-backend.env
+    networks:
+      - automation-network
+    depends_on:
+      - redis
+      - db-service
+      - config-service
+      - report-service
+      - playground-mock-service
+      - automation-user-management
+      - jaeger
+
+  ui-frontend:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/ui-frontend.Dockerfile
+      args:
+        VITE_BAP_URL: http://localhost:3032/buyer
+        VITE_BACKEND_URL: http://localhost:3034
+        VITE_BASE_URL: http://localhost:3032
+        VITE_BPP_URL: http://localhost:3032/seller
+        VITE_DB_SERVICE_API_KEY: D33A76D111B4BDFCB96A2AC34B85E
+        VITE_DEVELOPER_GUIDE_BACKEND_URL: http://localhost:8082
+    container_name: ui-frontend
+    ports:
+      - "3035:5001"
+    networks:
+      - automation-network
 
 volumes:
-  yugabyte_data:
+  mongo_data:
 
 networks:
   automation-network:
