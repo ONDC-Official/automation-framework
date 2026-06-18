@@ -124,3 +124,11 @@ docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
 You can experience the Protocol Workbench here: https://workbench.ondc.tech/home
 
 We’d love to hear your feedback, suggestions, questions, or thoughts — feel free to reach out with anything at PW-support@ondc.org
+
+
+
+# automation framework
+Signing_private_key: ATL8IjR0EazALCFrA4PTTaTI4Xzx+dBN9xvwUSfCikCKdrsK5g5HymMvzDKzc/kQYmmQTaQhTZS1n0DfPWC+cw==
+Signing_public_key:  ina7CuYOR8pjL8wys3P5EGJpkE2kIU2UtZ9A3z1gvnM=
+Crypto_Privatekey:   MC4CAQAwBQYDK2VuBCIEIAgGK8YFrauA87XhrePFGGIiPLVmA3M0M8VAiAK+mshX
+Crypto_Publickey:    MCowBQYDK2VuAyEAzfkKWnGhpm3HjxIqcbMEXt8m2EiIX+7a8WAhlX3wMCY=
