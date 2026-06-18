@@ -10,3 +10,27 @@
 	path = automation-specifications
 	url = https://github.com/ONDC-Official/automation-specifications.git
 	branch = main
+[submodule "automation-db"]
+	path = automation-db
+	url = https://github.com/ONDC-Official/automation-db.git
+	branch = main
+[submodule "automation-config-service"]
+	path = automation-config-service
+	url = https://github.com/ONDC-Official/automation-config-service.git
+	branch = main
+[submodule "automation-mock-playground-service"]
+	path = automation-mock-playground-service
+	url = https://github.com/ONDC-Official/automation-mock-playground-service.git
+	branch = main
+[submodule "automation-recorder-service"]
+	path = automation-recorder-service
+	url = https://github.com/ONDC-Official/automation-recorder-service.git
+	branch = main
+[submodule "automation-report-service"]
+	path = automation-report-service
+	url = https://github.com/ONDC-Official/automation-report-service.git
+	branch = main
+[submodule "automation-report-pramaan"]
+	path = automation-report-pramaan
+	url = https://github.com/ONDC-Official/automation-report-pramaan.git
+	branch = main

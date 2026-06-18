@@ -1,5 +1,12 @@
 version: "3.8"
 
+# Internal service URLs are declared once in root .env as canonical names
+# (MOCK_SVC, DB_SVC, etc.) and translated to each service's expected key name
+# in the environment: block below. infra.env carries all other shared values.
+#
+# All backend services build from submodule source.
+# Frontend services use custom Dockerfiles in dockerfiles/ to inject VITE vars at build time.
+
 services:
   mongo:
     image: mongo:6
@@ -16,6 +23,9 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --appendonly yes
     networks:
       - automation-network
 
@@ -31,27 +41,18 @@ services:
     networks:
       - automation-network
 
-  registry-service:
-    image: ghcr.io/ondc-official/automation-registry:dev-1.0.2
-    platform: linux/amd64
-    container_name: registry-service
-    ports:
-      - "8080:8080"
-    env_file:
-      - ./docker-env/registry-service.env
-    networks:
-      - automation-network
-    depends_on:
-      - mongo
-
   db-service:
-    image: ghcr.io/ondc-official/automation-db:dev-1.0.0-9ce8c80
-    platform: linux/amd64
+    build:
+      context: ./automation-db
+      dockerfile: dockerfile
     container_name: db-service
     ports:
       - "5001:5001"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/db-service.env
+    environment:
+      API_SERVICE_KEY: ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -59,13 +60,18 @@ services:
       - jaeger
 
   config-service:
-    image: ghcr.io/ondc-official/automation-config-service:prod-1.0.0-0d20f10
-    platform: linux/amd64
+    build:
+      context: ./automation-config-service
+      dockerfile: Dockerfile
     container_name: config-service
     ports:
       - "5556:5556"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/config-service.env
+    environment:
+      AUTOMATION_DB_BASE_URL: ${DB_SVC}
+      AUTOMATION_DB_API_KEY:  ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -74,13 +80,18 @@ services:
       - jaeger
 
   playground-mock-service:
-    image: ghcr.io/ondc-official/automation-mock-playground-service:dev-1.0.0-250ff4e
-    platform: linux/amd64
+    build:
+      context: ./automation-mock-playground-service
+      dockerfile: dockerfile
     container_name: playground-mock-service
     ports:
       - "3031:3000"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/playground-mock-service.env
+    environment:
+      API_SERVICE_URL:    ${API_SVC}
+      CONFIG_SERVICE_URL: ${CONFIG_SVC}
     networks:
       - automation-network
     depends_on:
@@ -88,14 +99,19 @@ services:
       - config-service
 
   recorder-service:
-    image: ghcr.io/ondc-official/automation-recorder-service:dev-0.0.3
-    platform: linux/amd64
+    build:
+      context: ./automation-recorder-service
+      dockerfile: dockerfile
     container_name: recorder-service
     ports:
       - "8090:8090"
       - "8089:8089"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/recorder-service.env
+    environment:
+      RECORDER_DB_BASE_URL: ${DB_SVC}
+      RECORDER_DB_API_KEY:  ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -103,39 +119,64 @@ services:
       - db-service
 
   report-pramaan-buyer:
-    image: ghcr.io/ondc-official/automation-report-pramaan-buyer:dev-0.0.7
-    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: dockerfiles/pramaan.Dockerfile
+      args:
+        SERVICE_DIR: automation-report-pramaan/buyerNPTestAPI
     container_name: report-pramaan-buyer
     ports:
       - "3005:3005"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/report-pramaan-buyer.env
+    environment:
+      BUYER_TESTING_URI: ${PRAMAAN_BUYER_SVC}
+      SELLER_TESTING_URI: ${PRAMAAN_SELLER_SVC}
+      PW_LOGS_API:        ${REPORT_SVC}
+      PW_LOGS_API_KEY:    ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
       - mongo
 
   report-pramaan-seller:
-    image: ghcr.io/ondc-official/automation-report-pramaan-seller:dev-0.0.7
-    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: dockerfiles/pramaan.Dockerfile
+      args:
+        SERVICE_DIR: automation-report-pramaan/sellerNPTestAPI
     container_name: report-pramaan-seller
     ports:
       - "3006:3005"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/report-pramaan-seller.env
+    environment:
+      BUYER_TESTING_URI: ${PRAMAAN_BUYER_SVC}
+      SELLER_TESTING_URI: ${PRAMAAN_SELLER_SVC}
+      PW_LOGS_API:        ${REPORT_SVC}
+      PW_LOGS_API_KEY:    ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
       - mongo
 
   report-service:
-    image: ghcr.io/ondc-official/automation-report-service:dev-1.0.0-398efa2
-    platform: linux/amd64
+    build:
+      context: ./automation-report-service
+      dockerfile: Dockerfile
     container_name: report-service
     ports:
       - "3000:3000"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/report-service.env
+    environment:
+      DATA_BASE_URL:      ${DB_SVC}
+      AUTOMATION_BACKEND: ${UI_BACKEND_SVC}
+      PRAMAAN_URL:        ${PRAMAAN_BUYER_SVC}/runtest
+      API_SERVICE_KEY:    ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -152,6 +193,7 @@ services:
     ports:
       - "8082:8082"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/automation-user-management.env
     networks:
       - automation-network
@@ -165,20 +207,30 @@ services:
     ports:
       - "3300:3300"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/form-service.env
+    environment:
+      MOCK_SERVICE_URL: ${MOCK_SVC}
+      BACKEND_URL:      ${UI_BACKEND_SVC}
     networks:
       - automation-network
     depends_on:
       - redis
 
   backoffice-backend:
-    image: ghcr.io/ondc-official/automation-backoffice-backend:dev-1.0.0-2439274
-    platform: linux/amd64
+    build:
+      context: ./automation-backoffice/backend
+      dockerfile: Dockerfile
     container_name: backoffice-backend
     ports:
       - "5200:5000"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/backoffice-backend.env
+    environment:
+      DB_SERVICE:   ${DB_SVC}
+      MOCK_SERVICE: ${MOCK_SVC}
+      DB_KEY:       ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -200,13 +252,25 @@ services:
       - automation-network
 
   ui-backend:
-    image: ghcr.io/ondc-official/automation-frontend/backend:dev-0.0.0-a5c34b3
-    platform: linux/amd64
+    build:
+      context: ./automation-frontend/backend
+      dockerfile: Dockerfile
     container_name: ui-backend
     ports:
       - "3034:5000"
     env_file:
+      - ./docker-env/infra.env
       - ./docker-env/ui-backend.env
+    environment:
+      API_SERVICE:             ${API_SVC}
+      CONFIG_SERVICE:          ${CONFIG_SVC}
+      DB_SERVICE:              ${DB_SVC}
+      MOCK_SERVICE:            ${MOCK_SVC}
+      REPORTING_SERVICE:       ${REPORT_SVC}
+      IN_HOUSE_REGISTRY:       ${REGISTRY_SVC}
+      DEVELOPER_GUIDE_SERVICE: ${USER_MGMT_SVC}
+      API_SERVICE_KEY:         ${API_SVC_KEY}
+      DB_SERVICE_API_KEY:      ${API_SVC_KEY}
     networks:
       - automation-network
     depends_on:
@@ -227,7 +291,7 @@ services:
         VITE_BACKEND_URL: http://localhost:3034
         VITE_BASE_URL: http://localhost:3032
         VITE_BPP_URL: http://localhost:3032/seller
-        VITE_DB_SERVICE_API_KEY: D33A76D111B4BDFCB96A2AC34B85E
+        VITE_DB_SERVICE_API_KEY: ${API_SVC_KEY}
         VITE_DEVELOPER_GUIDE_BACKEND_URL: http://localhost:8082
     container_name: ui-frontend
     ports:
@@ -237,6 +301,7 @@ services:
 
 volumes:
   mongo_data:
+  redis_data:
 
 networks:
   automation-network:
