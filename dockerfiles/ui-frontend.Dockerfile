@@ -1,8 +1,8 @@
 FROM node:20 AS builder
 WORKDIR /app
-COPY ./automation-frontend/frontend/package*.json ./
+COPY ./services/automation-frontend/frontend/package*.json ./
 RUN npm install
-COPY ./automation-frontend/frontend/ ./
+COPY ./services/automation-frontend/frontend/ ./
 ARG VITE_BAP_URL
 ARG VITE_BACKEND_URL
 ARG VITE_BASE_URL

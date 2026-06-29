@@ -43,7 +43,7 @@ services:
 
   db-service:
     build:
-      context: ./automation-db
+      context: ./services/automation-db
       dockerfile: dockerfile
     container_name: db-service
     ports:
@@ -61,7 +61,7 @@ services:
 
   config-service:
     build:
-      context: ./automation-config-service
+      context: ./services/automation-config-service
       dockerfile: Dockerfile
     container_name: config-service
     ports:
@@ -81,7 +81,7 @@ services:
 
   playground-mock-service:
     build:
-      context: ./automation-mock-playground-service
+      context: ./services/automation-mock-playground-service
       dockerfile: dockerfile
     container_name: playground-mock-service
     ports:
@@ -100,7 +100,7 @@ services:
 
   recorder-service:
     build:
-      context: ./automation-recorder-service
+      context: ./services/automation-recorder-service
       dockerfile: dockerfile
     container_name: recorder-service
     ports:
@@ -123,7 +123,7 @@ services:
       context: .
       dockerfile: dockerfiles/pramaan.Dockerfile
       args:
-        SERVICE_DIR: automation-report-pramaan/buyerNPTestAPI
+        SERVICE_DIR: services/automation-report-pramaan/buyerNPTestAPI
     container_name: report-pramaan-buyer
     ports:
       - "3005:3005"
@@ -145,7 +145,7 @@ services:
       context: .
       dockerfile: dockerfiles/pramaan.Dockerfile
       args:
-        SERVICE_DIR: automation-report-pramaan/sellerNPTestAPI
+        SERVICE_DIR: services/automation-report-pramaan/sellerNPTestAPI
     container_name: report-pramaan-seller
     ports:
       - "3006:3005"
@@ -164,7 +164,7 @@ services:
 
   report-service:
     build:
-      context: ./automation-report-service
+      context: ./services/automation-report-service
       dockerfile: Dockerfile
     container_name: report-service
     ports:
@@ -219,7 +219,7 @@ services:
 
   backoffice-backend:
     build:
-      context: ./automation-backoffice/backend
+      context: ./services/automation-backoffice/backend
       dockerfile: Dockerfile
     container_name: backoffice-backend
     ports:
@@ -253,7 +253,7 @@ services:
 
   ui-backend:
     build:
-      context: ./automation-frontend/backend
+      context: ./services/automation-frontend/backend
       dockerfile: Dockerfile
     container_name: ui-backend
     ports:
@@ -289,7 +289,7 @@ services:
       args:
         VITE_BAP_URL: http://localhost:3032/buyer
         VITE_BACKEND_URL: http://localhost:3034
-        VITE_BASE_URL: http://localhost:3032
+        VITE_BASE_URL: http://host.docker.internal:3032/api-service
         VITE_BPP_URL: http://localhost:3032/seller
         VITE_DB_SERVICE_API_KEY: ${API_SVC_KEY}
         VITE_DEVELOPER_GUIDE_BACKEND_URL: http://localhost:8082

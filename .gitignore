@@ -3,3 +3,5 @@ api-service/
 
 # Generated compose override — re-created by build-api-service.sh
 docker-compose.api.yml
+knowledge/.obsidian/*.*
+

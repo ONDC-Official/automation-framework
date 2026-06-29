@@ -1,8 +1,8 @@
 FROM node:18 AS builder
 WORKDIR /app
-COPY ./automation-backoffice/frontend/package*.json ./
+COPY ./services/automation-backoffice/frontend/package*.json ./
 RUN npm install
-COPY ./automation-backoffice/frontend/ ./
+COPY ./services/automation-backoffice/frontend/ ./
 ARG VITE_BACKEND_URL
 ARG VITE_BASE_URL
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL \

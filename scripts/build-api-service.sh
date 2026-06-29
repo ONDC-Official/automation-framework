@@ -101,8 +101,20 @@ npx -y @ondc/build-tools@latest validate -i build.yaml
 # ── read domain + version ────────────────────────────────────────────────────
 
 step "Reading domain and version"
-DOMAIN=$(python3 -c "import yaml; d=yaml.safe_load(open('build.yaml')); print(d['info']['domain'])")
-VERSION=$(python3 -c "import yaml; d=yaml.safe_load(open('build.yaml')); print(d['info']['version'])")
+# Read a dotted field (e.g. info.domain) from build.yaml without assuming any
+# particular YAML tooling: prefer Python+PyYAML if available, otherwise fall
+# back to js-yaml via npx (already used above for @ondc/build-tools).
+read_yaml_field() {
+  local path="$1"
+  if python3 -c "import yaml" >/dev/null 2>&1; then
+    python3 -c "import yaml,functools,sys; d=yaml.safe_load(open('build.yaml')); print(functools.reduce(lambda a,k:a[k], sys.argv[1].split('.'), d))" "$path"
+  else
+    npx -y js-yaml build.yaml | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const d=JSON.parse(s);process.stdout.write(String(process.argv[1].split('.').reduce((a,k)=>a[k],d)));});" "$path"
+  fi
+}
+DOMAIN=$(read_yaml_field info.domain)
+VERSION=$(read_yaml_field info.version)
+[ -n "$DOMAIN" ] && [ -n "$VERSION" ] || die "Could not read domain/version from build.yaml"
 info "Domain: $DOMAIN | Version: $VERSION"
 
 DOMAIN_NORM=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]' | tr -d ':')
