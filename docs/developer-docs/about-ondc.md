@@ -300,22 +300,20 @@ Every API request and callback carries a `context` object — the metadata envel
 ```json
 {
     "context": {
-        "domain": "ONDC:RET10",
-        "action": "init",
-        "version": "2.0.0",
-        "bap_id": "buyer-app.com",
-        "bap_uri": "https://buyer-app.com/ondc",
-        "bpp_id": "seller-app.com",
-        "bpp_uri": "https://seller-app.com/ondc",
-        "transaction_id": "txn-uuid-here",
-        "message_id": "msg-uuid-here",
-        "timestamp": "2024-01-15T10:00:00.000Z",
-        "location": {
-            "country": { "code": "IND" },
-            "city": { "code": "std:080" }
-        },
-        "ttl": "PT30S"
-    }
+    "domain": "ONDC:RET10",
+    "action": "init",
+    "timestamp": "2026-05-19T07:55:07.808Z",
+    "transaction_id": "3cd7243a-eef8-42e1-8d12-9c76eab6fcea",
+    "message_id": "fd44dca3-742a-4c22-88cd-5c1d2210e5b3",
+    "bap_id": "sample-bap-id",
+    "bap_uri": "https://bap.example.com",
+    "ttl": "PT30S",
+    "bpp_id": "sample-bpp-id",
+    "bpp_uri": "https://bpp.example.com",
+    "country": "IND",
+    "city": "std:011",
+    "core_version": "1.2.5"
+  }
 }
 ```
 
@@ -326,7 +324,8 @@ Key fields:
 - **`bap_id` / `bpp_id`** — Subscriber IDs of the buyer and seller apps.
 - **`bap_uri` / `bpp_uri`** — The callback URLs where responses should be sent.
 - **`transaction_id`** — A unique ID that ties together all API calls within a single end-to-end transaction. Remains constant from `search` through `on_confirm` and beyond.
-- **`message_id`** — A unique ID for each individual API call within a transaction.
+- **`message_id`** — A unique identifier for each request–response pair of API calls (for example, `search`–`on_search` or `init`–`on_init`) within a transaction. Each unsolicited API call (such as `on_status` or `on_update`) also has its own unique `message_id`.
+.
 - **`ttl`** — Time-to-live (ISO 8601 duration) specifying how long the sender will wait before timing out.
 
 ---
