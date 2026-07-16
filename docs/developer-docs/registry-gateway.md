@@ -65,25 +65,17 @@ If you need to find a counterparty's callback URL or verify they're a valid NP, 
 
 ### Registry API Endpoints
 
-| Environment    | `/subscribe`                               | `/lookup`                               | `/vlookup`                               |
-| -------------- | ------------------------------------------ | --------------------------------------- | ---------------------------------------- |
-| **Staging**    | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/lookup`      | `staging.registry.ondc.org/vlookup`      |
-| **Pre-Prod**   | `preprod.registry.ondc.org/ondc/subscribe` | `preprod.registry.ondc.org/ondc/lookup` | `preprod.registry.ondc.org/ondc/vlookup` |
-| **Production** | `prod.registry.ondc.org/subscribe`         | `prod.registry.ondc.org/lookup`         | `prod.registry.ondc.org/vlookup`         |
+| Environment    | `/subscribe`                               | `/v2.0/lookup`                          |
+| -------------- | ------------------------------------------ | --------------------------------------- |
+| **Staging**    | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/v2.0/lookup` |
+| **Pre-Prod**   | `preprod.registry.ondc.org/ondc/subscribe` | `preprod.registry.ondc.org/v2.0/lookup` |
+| **Production** | `prod.registry.ondc.org/subscribe`         | `prod.registry.ondc.org/v2.0/lookup`    |
 
-> **Note:** Pre-Prod URLs have the `/ondc/` path prefix. Staging and Production do not.
 
-### `/lookup` vs `/vlookup`
-
-| API        |          Auth Required?           | Purpose                                                                                                |
-| ---------- | :-------------------------------: | ------------------------------------------------------------------------------------------------------ |
-| `/lookup`  | No (Staging/Pre-Prod), Yes (Prod) | Basic lookup — returns NP entries matching your query filters                                          |
-| `/vlookup` |       Yes (signed request)        | Verified lookup — the response itself is signed by the Registry, so you can trust it cryptographically |
-
-**`/lookup` Request Example:**
+**`/v2.0/lookup` Request Example:**
 
 ```bash
-curl -X POST https://prod.registry.ondc.org/lookup \
+curl -X POST https://prod.registry.ondc.org/v2.0/lookup \
   -H "Content-Type: application/json" \
   -H "Authorization: Signature keyId=\"your-app.com|key123|ed25519\", ..." \
   -d '{
