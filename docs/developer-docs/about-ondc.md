@@ -359,7 +359,7 @@ The signature is computed over a signing string that includes:
 
 1. The `created` timestamp.
 2. The `expires` timestamp.
-3. A **BLAKE-512 digest** of the request body.
+3. A **BLAKE2b-512 digest** of the request body.
 
 ### 7.3 Verification Flow
 
@@ -367,7 +367,7 @@ When an NP receives a request:
 
 1. Extract the `keyId` from the `Authorization` header.
 2. Parse it into `subscriber_id`, `unique_key_id`, and `algorithm`.
-3. Look up the sender's **public key** from the Registry using the `subscriber_id` and `unique_key_id` (via the `/lookup` or `/vlookup` API, or from a cached copy).
+3. Look up the sender's **public key** from the Registry using the `subscriber_id` and `unique_key_id` (via the `/v2.0/lookup` API, or from a cached copy).
 4. Verify the Ed25519 signature against the signing string.
 5. If verification fails → return a NACK with an unauthorized error.
 
@@ -436,7 +436,7 @@ Each environment has its own set of keys, endpoints, and policies. Tokens and cr
 Once registered, any NP can look up another NP's details:
 
 ```bash
-curl -X POST https://prod.registry.ondc.org/lookup \
+curl -X POST https://prod.registry.ondc.org/v2.0/lookup \
   -H "Content-Type: application/json" \
   -d '{
     "subscriber_id": "seller-app.com",
@@ -539,7 +539,7 @@ Note that the Gateway is only involved in the `search` step. Everything from `se
 | **Registry**       | Central lookup service storing NP metadata and public keys                      |
 | **Context**        | Metadata envelope carried by every API request/callback                         |
 | **Transaction ID** | Unique identifier that binds all API calls within a single transaction          |
-| **Message ID**     | Unique identifier for an individual API call                                    |
+| **Message ID**     | A **`message_id`** is a unique identifier for each request–response pair of API calls (for example, `search`–`on_search` or `init`–`on_init`) within a transaction. Each unsolicited API call (such as `on_status` or `on_update`) also has its own unique `message_id`                                            |
 | **ACK**            | Positive acknowledgment — request accepted for processing                       |
 | **NACK**           | Negative acknowledgment — request rejected with error details                   |
 | **IGM**            | Issue & Grievance Management — APIs for dispute resolution                      |
