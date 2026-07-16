@@ -324,7 +324,8 @@ Key fields:
 - **`bap_id` / `bpp_id`** — Subscriber IDs of the buyer and seller apps.
 - **`bap_uri` / `bpp_uri`** — The callback URLs where responses should be sent.
 - **`transaction_id`** — A unique ID that ties together all API calls within a single end-to-end transaction. Remains constant from `search` through `on_confirm` and beyond.
-- **`message_id`** — A unique ID for each individual API call within a transaction.
+- **`message_id`** — A unique identifier for each request–response pair of API calls (for example, `search`–`on_search` or `init`–`on_init`) within a transaction. Each unsolicited API call (such as `on_status` or `on_update`) also has its own unique `message_id`.
+.
 - **`ttl`** — Time-to-live (ISO 8601 duration) specifying how long the sender will wait before timing out.
 
 ---
