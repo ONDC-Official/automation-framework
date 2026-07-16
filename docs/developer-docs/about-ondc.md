@@ -102,7 +102,7 @@ The **Registry** is the trust anchor of the network. It stores the public keys, 
 
 ### 2.5 Domains
 
-ONDC is domain-agnostic at the protocol level, but each vertical (retail, logistics, mobility, financial services, etc.) defines its own **domain code** and domain-specific schema extensions. Examples include `ONDC:RET10` (Grocery), `ONDC:RET11` (Food & Beverage), `ONDC:TRV10` (Mobility), `ONDC:FIS10` (Financial Services), and `ONDC:LOG10` (Logistics).
+ONDC is domain-agnostic at the protocol level, but each vertical (retail, logistics, mobility, financial services, etc.) defines its own **domain code** and domain-specific schema extensions. Examples include `ONDC:RET10` (Grocery), `ONDC:RET11` (Food & Beverage), `ONDC:TRV10` (Mobility), `ONDC:FIS10` (Gift Card - Financial Services), and `ONDC:LOG10` (Logistics).
 
 The protocol layer described in this document remains the same across all domains.
 
