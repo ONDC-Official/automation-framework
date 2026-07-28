@@ -397,7 +397,7 @@ ONDC operates three environments:
 
 | Environment        | Registry URL                | Purpose                            |
 | ------------------ | --------------------------- | ---------------------------------- |
-| **Staging**        | `staging.registry.ondc.org` | Initial development and testing    |
+| **Staging** _(decommissioned)_ | `staging.registry.ondc.org` | Initial development and testing    |
 | **Pre-Production** | `preprod.registry.ondc.org` | Integration testing with other NPs |
 | **Production**     | `prod.registry.ondc.org`    | Live transactions with real users  |
 

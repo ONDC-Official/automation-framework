@@ -142,10 +142,8 @@ ONDC uses two distinct identifiers for subscribers. While both identify particip
 3. If you have a firewall or IP blocking on your server, whitelist the following IPs:
 
 ```
-34.131.40.9    34.131.211.247   34.131.201.63   34.131.180.63
-34.131.78.219  34.93.10.146     35.200.143.183  34.93.118.120
-35.200.183.209 34.93.102.253    35.200.232.136  34.100.170.176
-107.178.231.181/32
+34.180.45.0    34.14.149.105  35.200.173.69
+34.131.150.58  34.14.133.118  34.131.106.249
 ```
 
 ---
@@ -439,7 +437,7 @@ Lookup v2.0 is an ONDC Registry API that allows participants (BAPs, BPPs, etc.) 
 
 | Environment | Endpoint                                        |
 | ----------- | ----------------------------------------------- |
-| Staging     | `https://staging.registry.ondc.org/v2.0/lookup` |
+| Staging _(decommissioned)_ | `https://staging.registry.ondc.org/v2.0/lookup` |
 | Pre-Prod    | `https://preprod.registry.ondc.org/v2.0/lookup` |
 | Production  | `https://prod.registry.ondc.org/v2.0/lookup`    |
 
