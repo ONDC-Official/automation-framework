@@ -67,7 +67,7 @@ If you need to find a counterparty's callback URL or verify they're a valid NP, 
 
 | Environment    | `/subscribe`                               | `/v2.0/lookup`                          |
 | -------------- | ------------------------------------------ | --------------------------------------- |
-| **Staging**    | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/v2.0/lookup` |
+| **Staging** _(decommissioned)_ | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/v2.0/lookup` |
 | **Pre-Prod**   | `preprod.registry.ondc.org/ondc/subscribe` | `preprod.registry.ondc.org/v2.0/lookup` |
 | **Production** | `prod.registry.ondc.org/subscribe`         | `prod.registry.ondc.org/v2.0/lookup`    |
 
