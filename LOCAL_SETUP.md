@@ -167,7 +167,7 @@ Two consequences:
 - Your git tree becomes dirty after every run. This is expected, not a mistake.
 - `.env` currently ships as `API_SVC=http://host.docker.internal:3032/api-service`, the
   setting for running the api-service natively outside Docker. The script overwrites that
-  with the in-network nginx address. If you want the native loop back (§7), restore it by
+  with the in-network nginx address. If you want the native loop back (§8), restore it by
   hand.
 
 The `sed -i ''` form is BSD/macOS syntax and will fail on GNU sed (Linux). Use
@@ -222,7 +222,61 @@ ESLint/Prettier configs exist only in `automation-frontend/frontend`,
 `automation-backoffice/frontend`, and `automation-mock-playground-service`. Only
 `automation-frontend` has git hooks (husky).
 
-### 4.8 Miscellaneous
+### 4.8 GHCR pulls fail with `denied` if you have stale ghcr.io credentials
+
+`docker compose up` aborts the **entire** stack with:
+
+```
+Image ghcr.io/ondc-official/automation-user-management:... Error error from registry: denied
+Error response from daemon: error from registry: denied
+```
+
+This is almost always a local credential problem, not a permissions problem. Both images are
+**public** — an anonymous token request against `ghcr.io/v2/ondc-official/<image>/manifests/<tag>`
+returns HTTP 200. But if `~/.docker/config.json` holds a stale or expired `ghcr.io` entry,
+Docker sends those credentials and GHCR rejects the authenticated request outright rather
+than falling back to anonymous access.
+
+Fix:
+
+```bash
+docker logout ghcr.io
+```
+
+Confirm the images are public before assuming you need a token:
+
+```bash
+tok=$(curl -s "https://ghcr.io/token?scope=repository:ondc-official/automation-form-service:pull" | jq -r .token)
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $tok" \
+  https://ghcr.io/v2/ondc-official/automation-form-service/manifests/dev-1.0.0-7792084
+# 200 = public, your local credentials are the problem
+```
+
+After logging out, a bare `docker pull` of either image fails differently:
+
+```
+no matching manifest for linux/arm64/v8 in the manifest list entries
+```
+
+That is expected — both images are **amd64-only**. `docker compose` handles it via the
+`platform: linux/amd64` key. Only a manual pull needs the flag:
+
+```bash
+docker pull --platform linux/amd64 ghcr.io/ondc-official/automation-form-service:dev-1.0.0-7792084
+```
+
+### 4.9 `ui-backend` returns 500 for downstream 4xx
+
+`POST /sessions` with an invalid body returns **500**, not 400. The downstream service
+correctly replies `400 {"message":"domain, version, usecase are required"}`, but
+`createSessionService` lets the axios error propagate uncaught, so the client sees a server
+error for what is a client mistake. See `automation-frontend/backend/src/services/sessionService.ts`
+and `controllers/sessionController.ts`.
+
+Worth knowing when debugging: **a 500 from `ui-backend` often means a 4xx from something
+behind it.** Check the container log for the real status before assuming a crash.
+
+### 4.10 Miscellaneous
 
 - `automation-recorder-service` has a **23 MB compiled Go binary** (`automationrecorder`)
   committed to the repository — it accounts for essentially all of that submodule's size.
@@ -248,7 +302,10 @@ open -a Docker
 # 3. Build — 11 services compile from source, so the first run is slow (20–40 min)
 docker compose build
 
-# 4. Start all 16 services
+# 4. Clear any stale GHCR credentials (see 4.8) — otherwise `up` aborts
+docker logout ghcr.io
+
+# 5. Start all 16 services
 docker compose up -d
 docker compose ps
 ```
