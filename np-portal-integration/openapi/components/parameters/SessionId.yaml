@@ -1,0 +1,9 @@
+name: session_id
+in: path
+required: true
+description: Session identifier, as returned by the sessions list.
+schema:
+  type: string
+  minLength: 1
+  maxLength: 128
+example: sess_9b2f4e1a7c

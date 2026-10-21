@@ -1,30 +1,31 @@
 get:
   operationId: listOrganizationSessions
-  summary: List workbench sessions for an organization
+  summary: List sessions of an organization
   description: |
-    Returns all workbench sessions belonging to the organization — both currently
-    **active** sessions and **expired** (past) ones — newest first by default.
+    Returns the **latest 100** workbench sessions of the organization (newest first by
+    `created_at`), both currently **active** and **expired** (past) ones. The response is
+    not paginated.
+
+    Each item is a lightweight summary. To get a session's flow results, settings and
+    settings history, call `GET /organizations/{org_id}/sessions/{session_id}`.
 
     A session is `active` while it can still be used in the workbench. Sessions expire
     after a period of inactivity (currently 4 days since the last activity); once expired
-    they remain listed here as historical records with `status: expired`.
+    they remain listed as historical records with `status: expired`.
 
     ### Filtering
-    All filters are optional. Different filters are combined with AND; repeating a
-    filter (e.g. `domain=ONDC:RET10&domain=ONDC:RET11`) matches ANY of the values.
-    Text filters are exact, case-sensitive matches, except `q`.
+    All filters are optional and are applied before the 100-session limit. Different
+    filters are combined with AND; repeating a filter (e.g.
+    `domain=ONDC:RET10&domain=ONDC:RET11`) matches ANY of the values. Text filters are
+    exact, case-sensitive matches, except `q`.
 
     Common queries:
     - Active sessions of one user: `?status=active&user_id=usr_7Hq2LkP9`
     - Failed sessions this month: `?result=failed&created_from=2026-10-01T00:00:00Z`
     - Sessions that ran a flow: `?flow_id=ORDER_FLOW&domain=ONDC:RET10`
-    - Most recently used first: `?sort=last_activity_at&order=desc`
 
-    ### Sorting and pagination
-    Sorted by `sort` / `order`; ties are broken by `session_id`, so the order is stable
-    across pages. Paginated with `page` / `limit`. New sessions created while you page
-    through results can shift items between pages — use `created_to` set to the time of
-    your first request to get a fixed snapshot.
+    `has_more: true` means more than 100 sessions matched. To look further back, narrow
+    the filters or set `created_to` to the `created_at` of the oldest session returned.
   tags: [Sessions]
   parameters:
     - $ref: ../components/parameters/OrgId.yaml
@@ -39,18 +40,6 @@ get:
         minLength: 2
         maxLength: 100
       example: buyer.example-np
-    - name: session_id
-      in: query
-      required: false
-      description: Return only these sessions. Repeat for several.
-      style: form
-      explode: true
-      schema:
-        type: array
-        maxItems: 100
-        items:
-          type: string
-      example: [sess_9b2f4e1a7c]
     - name: status
       in: query
       required: false
@@ -120,12 +109,6 @@ get:
         items:
           type: string
       example: [ORDER_FLOW]
-    - name: report_available
-      in: query
-      required: false
-      description: Only sessions with (`true`) or without (`false`) a generated report.
-      schema:
-        type: boolean
     - name: created_from
       in: query
       required: false
@@ -158,28 +141,10 @@ get:
         type: string
         format: date-time
       example: '2026-10-22T00:00:00Z'
-    - name: sort
-      in: query
-      required: false
-      description: Field to sort by.
-      schema:
-        type: string
-        enum: [created_at, last_activity_at, domain, version]
-        default: created_at
-    - name: order
-      in: query
-      required: false
-      description: Sort direction.
-      schema:
-        type: string
-        enum: [asc, desc]
-        default: desc
-    - $ref: ../components/parameters/Page.yaml
-    - $ref: ../components/parameters/Limit.yaml
     - $ref: ../components/parameters/RequestId.yaml
   responses:
     '200':
-      description: A page of sessions. Returns an empty `data` array when nothing matches.
+      description: Up to 100 sessions, newest first. Returns an empty `data` array when nothing matches.
       headers:
         X-Request-Id:
           $ref: ../components/headers/RequestId.yaml
@@ -187,18 +152,19 @@ get:
         application/json:
           schema:
             type: object
-            required: [data, pagination]
+            required: [data, has_more]
             properties:
               data:
                 type: array
+                maxItems: 100
                 items:
-                  $ref: ../components/schemas/SessionSummary.yaml
-              pagination:
-                $ref: ../components/schemas/Pagination.yaml
+                  $ref: ../components/schemas/SessionListItem.yaml
+              has_more:
+                type: boolean
+                description: '`true` if more than 100 sessions matched and only the latest 100 are returned.'
           example:
             data:
               - session_id: sess_9b2f4e1a7c
-                org_id: org_3Fz8QmW1
                 user_id: usr_7Hq2LkP9
                 status: active
                 result: failed
@@ -208,58 +174,9 @@ get:
                 domain: ONDC:RET10
                 version: 1.2.5
                 usecase_id: GROCERY
-                flow_summary:
-                  - flow_id: ORDER_FLOW
-                    total_steps: 4
-                    passed_steps: 4
-                    failed_steps: 0
-                    transaction_ids: [txn_5d1e0b7f, txn_a83c92e4]
-                  - flow_id: CANCEL_FLOW
-                    total_steps: 6
-                    passed_steps: 2
-                    failed_steps: 1
-                    transaction_ids: [txn_0f6b3d21]
-                  - flow_id: RETURN_FLOW
-                    total_steps: 8
-                    passed_steps: 0
-                    failed_steps: 0
-                    transaction_ids: []
-                settings:
-                  protocol_validation: true
-                  header_validation: false
-                  time_validation: true
-                  sensitive_ttl: true
-                  use_gateway: true
-                  stop_after_first_nack: true
-                  use_gzip: false
-                settings_history:
-                  - changed_at: '2026-10-21T07:45:02Z'
-                    changed_by: usr_7Hq2LkP9
-                    changes:
-                      - setting: use_gateway
-                        previous_value: false
-                        new_value: true
-                  - changed_at: '2026-10-20T09:20:13Z'
-                    changed_by: usr_7Hq2LkP9
-                    changes:
-                      - setting: header_validation
-                        previous_value: true
-                        new_value: false
-                      - setting: use_gzip
-                        previous_value: true
-                        new_value: false
-                  - changed_at: '2026-10-20T09:14:30Z'
-                    changed_by: usr_7Hq2LkP9
-                    changes:
-                      - setting: header_validation
-                        previous_value: false
-                        new_value: true
-                report_available: false
                 created_at: '2026-10-20T09:12:44Z'
                 last_activity_at: '2026-10-21T08:03:10Z'
-                expires_at: '2026-10-25T08:03:10Z'
               - session_id: sess_41c0d8e2aa
-                org_id: org_3Fz8QmW1
                 user_id: usr_K2m9Xw4T
                 status: expired
                 result: passed
@@ -269,30 +186,9 @@ get:
                 domain: ONDC:RET10
                 version: 1.2.5
                 usecase_id: GROCERY
-                flow_summary:
-                  - flow_id: ORDER_FLOW
-                    total_steps: 4
-                    passed_steps: 4
-                    failed_steps: 0
-                    transaction_ids: [txn_7b2a4c90]
-                settings:
-                  protocol_validation: true
-                  header_validation: true
-                  time_validation: true
-                  sensitive_ttl: true
-                  use_gateway: false
-                  stop_after_first_nack: true
-                  use_gzip: false
-                settings_history: []
-                report_available: true
                 created_at: '2026-10-02T11:40:00Z'
                 last_activity_at: '2026-10-03T16:22:51Z'
-                expires_at: null
-            pagination:
-              page: 1
-              limit: 20
-              total_items: 2
-              total_pages: 1
+            has_more: false
     '400':
       $ref: ../components/responses/BadRequest.yaml
     '401':

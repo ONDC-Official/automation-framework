@@ -1,0 +1,45 @@
+title: SessionDetail
+description: Full view of a session. Contains every field of the list item, plus the fields below.
+allOf:
+  - $ref: SessionListItem.yaml
+  - type: object
+    required:
+      - org_id
+      - expires_at
+      - report_available
+      - flow_summary
+      - settings
+      - settings_history
+    properties:
+      org_id:
+        type: string
+        description: Organization the session belongs to.
+      expires_at:
+        type: [string, 'null']
+        format: date-time
+        description: |
+          When the session will expire if there is no further activity. Each activity
+          pushes this forward. `null` for expired sessions.
+      report_available:
+        type: boolean
+        description: Whether a test report has been generated for this session.
+      flow_summary:
+        type: array
+        description: Results per flow in the session. Empty if no flows are configured.
+        items:
+          $ref: FlowRunSummary.yaml
+      settings:
+        description: |
+          Current settings of the session (for an expired session, the settings it had when
+          it expired). `null` for sessions created before settings were recorded.
+        oneOf:
+          - $ref: SessionSettings.yaml
+          - type: 'null'
+      settings_history:
+        type: array
+        maxItems: 10
+        description: |
+          The last 10 updates to the session's settings, newest first. Empty if the settings
+          were never changed after the session was created.
+        items:
+          $ref: SettingsChange.yaml

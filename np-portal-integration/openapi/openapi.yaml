@@ -14,10 +14,9 @@ info:
     - Identifiers are opaque strings; do not parse them.
     - Errors follow [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457)
       (`application/problem+json`).
-    - List endpoints share the same query style: optional filters combined with AND;
-      repeating a parameter (`?domain=A&domain=B`) matches any of the values; `q` is a
-      case-insensitive free-text search; `sort` / `order` for ordering; `page` / `limit`
-      for pagination. Invalid filter values return `400`.
+    - List endpoints are not paginated and share the same query style: optional filters
+      combined with AND; repeating a parameter (`?domain=A&domain=B`) matches any of the
+      values; `q` is a case-insensitive free-text search. Invalid filter values return `400`.
     - Every request should send an `X-Request-Id` header; it is echoed back in the response
       and should be quoted when reporting issues.
 
@@ -51,6 +50,8 @@ tags:
 paths:
   /organizations/{org_id}/sessions:
     $ref: paths/organizations_{org_id}_sessions.yaml
+  /organizations/{org_id}/sessions/{session_id}:
+    $ref: paths/organizations_{org_id}_sessions_{session_id}.yaml
   /flows:
     $ref: paths/flows.yaml
   /health:

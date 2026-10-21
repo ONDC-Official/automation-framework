@@ -1,0 +1,54 @@
+title: SessionListItem
+description: Lightweight view of a session, as returned by the sessions list.
+type: object
+required:
+  - session_id
+  - user_id
+  - status
+  - result
+  - session_type
+  - np_type
+  - subscriber_url
+  - domain
+  - version
+  - usecase_id
+  - created_at
+  - last_activity_at
+properties:
+  session_id:
+    type: string
+    description: Unique session identifier. Use it to fetch the full session.
+  user_id:
+    type: string
+    description: User who created the session.
+  status:
+    $ref: SessionStatus.yaml
+  result:
+    $ref: SessionResult.yaml
+  session_type:
+    type: string
+    enum: [AUTOMATION, MANUAL]
+    description: How the session is driven.
+  np_type:
+    $ref: NpType.yaml
+  subscriber_url:
+    type: string
+    format: uri
+    description: Subscriber URL of the network participant under test.
+  domain:
+    type: [string, 'null']
+    description: ONDC domain, e.g. `ONDC:RET10`.
+  version:
+    type: [string, 'null']
+    description: Protocol version, e.g. `1.2.5`.
+  usecase_id:
+    type: [string, 'null']
+    description: Use case selected when the session was created.
+  created_at:
+    type: string
+    format: date-time
+    description: When the session was created.
+  last_activity_at:
+    type: string
+    format: date-time
+    description: Last time the session was used or updated.

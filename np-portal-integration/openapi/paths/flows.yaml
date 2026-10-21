@@ -16,9 +16,12 @@ get:
     - Flows that exercise cancellation: `?domain=ONDC:RET10&action=cancel`
     - Flows tagged both `core` and `order`: `?tag=core&tag=order&tag_match=all`
 
-    ### Sorting and pagination
+    ### Sorting
     Sorted by `sort` / `order`; ties are broken by `domain`, `version`, `usecase_id`,
-    `flow_id`, so the order is stable across pages. Paginated with `page` / `limit`.
+    `flow_id`.
+
+    The response is not paginated: all matching flows are returned. Without filters this
+    is the whole catalog, so filter by at least `domain` (or `session_id`) where possible.
   tags: [Flows]
   parameters:
     - name: session_id
@@ -103,12 +106,10 @@ get:
         type: string
         enum: [asc, desc]
         default: asc
-    - $ref: ../components/parameters/Page.yaml
-    - $ref: ../components/parameters/Limit.yaml
     - $ref: ../components/parameters/RequestId.yaml
   responses:
     '200':
-      description: A page of flows. Returns an empty `data` array when nothing matches.
+      description: All matching flows. Returns an empty `data` array when nothing matches.
       headers:
         X-Request-Id:
           $ref: ../components/headers/RequestId.yaml
@@ -116,14 +117,12 @@ get:
         application/json:
           schema:
             type: object
-            required: [data, pagination]
+            required: [data]
             properties:
               data:
                 type: array
                 items:
                   $ref: ../components/schemas/FlowMeta.yaml
-              pagination:
-                $ref: ../components/schemas/Pagination.yaml
           example:
             data:
               - flow_id: ORDER_FLOW
@@ -163,11 +162,6 @@ get:
                     description: Seller app accepts the order.
                     unsolicited: false
                     pair_step_key: confirm
-            pagination:
-              page: 1
-              limit: 20
-              total_items: 1
-              total_pages: 1
     '400':
       $ref: ../components/responses/BadRequest.yaml
     '401':
