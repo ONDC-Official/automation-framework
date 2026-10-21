@@ -1,0 +1,3 @@
+description: Correlation ID for this request (echoed from the request, or server-generated).
+schema:
+  type: string

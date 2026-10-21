@@ -1,0 +1,9 @@
+description: Missing or invalid credentials.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/unauthorized
+      title: Unauthorized
+      status: 401

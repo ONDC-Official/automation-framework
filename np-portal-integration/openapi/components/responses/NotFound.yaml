@@ -1,0 +1,9 @@
+description: The requested resource does not exist.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/not-found
+      title: Not found
+      status: 404

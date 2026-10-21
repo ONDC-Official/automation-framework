@@ -1,0 +1,180 @@
+get:
+  operationId: listFlows
+  summary: Get flow metadata
+  description: |
+    Returns display information for test flows: title, description, tags and the
+    list of steps.
+
+    ### Filtering
+    All filters are optional. Different filters are combined with AND; repeating a
+    filter (e.g. `tag=core&tag=order`) matches ANY of the values (for `tag`, see also
+    `tag_match`). Text filters are exact, case-sensitive matches, except `q`.
+
+    Common queries:
+    - All flows of a session: `?session_id=sess_9b2f4e1a7c`
+    - Specific flows: `?domain=ONDC:RET10&version=1.2.5&usecase_id=GROCERY&flow_id=ORDER_FLOW&flow_id=CANCEL_FLOW`
+    - Flows that exercise cancellation: `?domain=ONDC:RET10&action=cancel`
+    - Flows tagged both `core` and `order`: `?tag=core&tag=order&tag_match=all`
+
+    ### Sorting and pagination
+    Sorted by `sort` / `order`; ties are broken by `domain`, `version`, `usecase_id`,
+    `flow_id`, so the order is stable across pages. Paginated with `page` / `limit`.
+  tags: [Flows]
+  parameters:
+    - name: session_id
+      in: query
+      required: false
+      description: |
+        Return the flows of this session, with the session's `domain`, `version` and
+        `usecase_id` applied automatically. The session must belong to an organization
+        the caller has access to, otherwise `404` is returned.
+      schema:
+        type: string
+      example: sess_9b2f4e1a7c
+    - name: q
+      in: query
+      required: false
+      description: Free-text search. Case-insensitive partial match on `flow_id`, `title` and `description`.
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 100
+      example: cancel
+    - $ref: ../components/parameters/DomainFilter.yaml
+    - $ref: ../components/parameters/VersionFilter.yaml
+    - $ref: ../components/parameters/UsecaseIdFilter.yaml
+    - name: flow_id
+      in: query
+      required: false
+      description: Return only these flows. Repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 100
+        items:
+          type: string
+      example: [ORDER_FLOW, CANCEL_FLOW]
+    - name: tag
+      in: query
+      required: false
+      description: Flows with these tags. Repeat for several; see `tag_match`.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 20
+        items:
+          type: string
+      example: [core]
+    - name: tag_match
+      in: query
+      required: false
+      description: With several `tag` values, match flows having `any` of them or `all` of them.
+      schema:
+        type: string
+        enum: [any, all]
+        default: any
+    - name: action
+      in: query
+      required: false
+      description: Flows with at least one step for these Beckn actions (e.g. `cancel`, `on_status`). Repeat for several.
+      style: form
+      explode: true
+      schema:
+        type: array
+        maxItems: 20
+        items:
+          type: string
+      example: [cancel]
+    - name: sort
+      in: query
+      required: false
+      description: Field to sort by.
+      schema:
+        type: string
+        enum: [flow_id, title, total_steps]
+        default: flow_id
+    - name: order
+      in: query
+      required: false
+      description: Sort direction.
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+    - $ref: ../components/parameters/Page.yaml
+    - $ref: ../components/parameters/Limit.yaml
+    - $ref: ../components/parameters/RequestId.yaml
+  responses:
+    '200':
+      description: A page of flows. Returns an empty `data` array when nothing matches.
+      headers:
+        X-Request-Id:
+          $ref: ../components/headers/RequestId.yaml
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data, pagination]
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../components/schemas/FlowMeta.yaml
+              pagination:
+                $ref: ../components/schemas/Pagination.yaml
+          example:
+            data:
+              - flow_id: ORDER_FLOW
+                domain: ONDC:RET10
+                version: 1.2.5
+                usecase_id: GROCERY
+                title: Order flow
+                description: Discovery through order confirmation for a grocery order.
+                tags: [core, order]
+                total_steps: 4
+                steps:
+                  - step_key: search
+                    action: search
+                    owner: BAP
+                    label: Search
+                    description: Buyer app searches for items.
+                    unsolicited: false
+                    pair_step_key: on_search
+                  - step_key: on_search
+                    action: on_search
+                    owner: BPP
+                    label: Catalog
+                    description: Seller app returns its catalog.
+                    unsolicited: false
+                    pair_step_key: search
+                  - step_key: confirm
+                    action: confirm
+                    owner: BAP
+                    label: Confirm order
+                    description: Buyer app places the order.
+                    unsolicited: false
+                    pair_step_key: on_confirm
+                  - step_key: on_confirm
+                    action: on_confirm
+                    owner: BPP
+                    label: Order confirmed
+                    description: Seller app accepts the order.
+                    unsolicited: false
+                    pair_step_key: confirm
+            pagination:
+              page: 1
+              limit: 20
+              total_items: 1
+              total_pages: 1
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '429':
+      $ref: ../components/responses/TooManyRequests.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

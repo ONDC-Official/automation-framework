@@ -1,0 +1,9 @@
+description: The request is malformed or failed validation.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/validation-failed
+      title: Bad request
+      status: 400

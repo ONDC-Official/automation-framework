@@ -1,0 +1,8 @@
+title: SessionResult
+type: string
+enum: [passed, failed, incomplete]
+description: |
+  Overall outcome of a session, based on the latest transaction of each flow:
+  - `passed` — the session has at least one flow, and every flow passed all its steps.
+  - `failed` — at least one flow has a failed step.
+  - `incomplete` — no failed steps, but some steps have not run yet.

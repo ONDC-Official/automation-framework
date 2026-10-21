@@ -1,0 +1,4 @@
+title: NpType
+type: string
+enum: [BAP, BPP]
+description: Network participant type — `BAP` (buyer app) or `BPP` (seller app).

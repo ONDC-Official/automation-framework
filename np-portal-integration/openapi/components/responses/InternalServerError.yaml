@@ -1,0 +1,9 @@
+description: Unexpected server error. Safe to retry idempotent requests.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/internal
+      title: Internal server error
+      status: 500

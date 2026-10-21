@@ -1,0 +1,18 @@
+{
+  "name": "np-portal-integration",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API contract (OpenAPI 3.1) for the portal third-party integration",
+  "scripts": {
+    "lint": "redocly lint",
+    "bundle": "redocly bundle portal@v1 -o dist/openapi.yaml && redocly bundle portal@v1 -o dist/openapi.json",
+    "docs": "redocly build-docs portal@v1 -o dist/index.html",
+    "build": "npm run lint && npm run bundle && npm run docs",
+    "mock": "npm run bundle && prism mock dist/openapi.yaml --port 4010",
+    "mock:dynamic": "npm run bundle && prism mock dist/openapi.yaml --port 4010 --dynamic"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.66.0",
+    "@stoplight/prism-cli": "^5.16.0"
+  }
+}

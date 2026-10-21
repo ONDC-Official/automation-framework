@@ -1,0 +1,40 @@
+title: Problem
+description: Error response body, per RFC 9457 (Problem Details for HTTP APIs).
+type: object
+required: [type, title, status]
+properties:
+  type:
+    type: string
+    format: uri-reference
+    description: URI identifying the error type. Stable — safe to branch on.
+    example: https://api.example.com/errors/validation-failed
+  title:
+    type: string
+    description: Short, human-readable summary of the error type.
+    example: Validation failed
+  status:
+    type: integer
+    description: HTTP status code.
+    example: 400
+  detail:
+    type: string
+    description: Human-readable explanation specific to this occurrence.
+    example: One or more fields are invalid.
+  instance:
+    type: string
+    description: Request ID of the failing request.
+    example: 3f1c2a9e-8d4b-4e2a-9b1f-6a7c5d2e1f00
+  errors:
+    type: array
+    description: Field-level validation errors (present for 400/422).
+    items:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          description: JSON Pointer to the offending field.
+          example: /items/0/quantity
+        message:
+          type: string
+          example: must be greater than 0

@@ -1,0 +1,48 @@
+title: SessionSettings
+description: |
+  Validation and execution settings of a session (the "Session validations" toggles
+  in the workbench). Each setting is `true` when enabled.
+
+  Settings that only apply to some domains (`encryption_validation`, `use_care`,
+  `use_tunnel`) are omitted when they do not apply. New settings may be added over
+  time; ignore keys you do not recognise.
+type: object
+required:
+  - protocol_validation
+  - header_validation
+  - time_validation
+  - sensitive_ttl
+  - use_gateway
+  - stop_after_first_nack
+  - use_gzip
+properties:
+  protocol_validation:
+    type: boolean
+    description: Validate payloads against protocol-level schema and rules.
+  header_validation:
+    type: boolean
+    description: Verify required request headers and their expected values.
+  time_validation:
+    type: boolean
+    description: Check that request and response timestamps are valid.
+  sensitive_ttl:
+    type: boolean
+    description: Enforce the TTL of each request strictly when waiting for responses.
+  use_gateway:
+    type: boolean
+    description: Route requests through the gateway before they reach the target participant.
+  stop_after_first_nack:
+    type: boolean
+    description: Stop the flow after the first NACK response.
+  use_gzip:
+    type: boolean
+    description: Use gzip compression for payloads.
+  encryption_validation:
+    type: boolean
+    description: Validate encryption-related fields and encrypted values.
+  use_care:
+    type: boolean
+    description: Enable IGM (issue and grievance management) checks for supported scenarios.
+  use_tunnel:
+    type: boolean
+    description: Send requests and responses through the ONDC tunnel.

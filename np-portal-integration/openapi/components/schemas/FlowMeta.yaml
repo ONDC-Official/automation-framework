@@ -1,0 +1,39 @@
+title: FlowMeta
+description: Display information for a test flow.
+type: object
+required: [flow_id, domain, version, usecase_id, title, description, tags, total_steps, steps]
+properties:
+  flow_id:
+    type: string
+    description: |
+      Flow identifier. Unique only within a `domain` + `version` + `usecase_id`
+      combination, so the same `flow_id` can appear more than once in the catalog.
+  domain:
+    type: string
+    description: ONDC domain, e.g. `ONDC:RET10`.
+  version:
+    type: string
+    description: Protocol version, e.g. `1.2.5`.
+  usecase_id:
+    type: string
+    description: Use case the flow belongs to.
+  title:
+    type: [string, 'null']
+    description: Short display name of the flow.
+  description:
+    type: string
+    description: What the flow tests.
+  tags:
+    type: array
+    description: Labels for grouping or filtering flows in a UI.
+    items:
+      type: string
+  total_steps:
+    type: integer
+    minimum: 0
+    description: Number of steps in the flow (equal to the length of `steps`).
+  steps:
+    type: array
+    description: Steps of the flow, in execution order.
+    items:
+      $ref: FlowStepMeta.yaml

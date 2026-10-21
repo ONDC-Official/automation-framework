@@ -1,0 +1,12 @@
+name: domain
+in: query
+required: false
+description: ONDC domain(s). Repeat for several, e.g. `domain=ONDC:RET10&domain=ONDC:RET11`.
+style: form
+explode: true
+schema:
+  type: array
+  maxItems: 50
+  items:
+    type: string
+example: ['ONDC:RET10']

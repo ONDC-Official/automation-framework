@@ -1,0 +1,6 @@
+title: SessionStatus
+type: string
+enum: [active, expired]
+description: |
+  - `active` — the session is live and can be used in the workbench.
+  - `expired` — the session timed out after inactivity; it is retained as a historical record.

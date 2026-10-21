@@ -1,0 +1,9 @@
+description: Credentials are valid but lack permission for this operation.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/forbidden
+      title: Forbidden
+      status: 403

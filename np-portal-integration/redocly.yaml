@@ -1,0 +1,20 @@
+apis:
+  portal@v1:
+    root: openapi/openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  # Contract hygiene — every operation must be fully described for the integrator.
+  operation-operationId: error
+  operation-summary: error
+  operation-description: warn
+  operation-4xx-response: error
+  operation-2xx-response: error
+  tag-description: error
+  no-invalid-media-type-examples: error
+  no-invalid-schema-examples: error
+  no-unused-components: warn
+  info-license: off
+  security-defined: error

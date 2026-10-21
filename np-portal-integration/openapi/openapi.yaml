@@ -1,0 +1,67 @@
+openapi: 3.1.0
+
+info:
+  title: Portal Integration API
+  version: 0.1.0
+  summary: Contract for third-party integration with the ONDC Workbench portal.
+  description: |
+    This document is the source of truth for the integration contract.
+
+    ## Conventions
+    - All request and response bodies are JSON (`application/json`), UTF-8 encoded.
+    - Field names use `snake_case`.
+    - Timestamps are RFC 3339 / ISO 8601 strings in UTC, e.g. `2026-10-21T10:15:30Z`.
+    - Identifiers are opaque strings; do not parse them.
+    - Errors follow [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457)
+      (`application/problem+json`).
+    - List endpoints share the same query style: optional filters combined with AND;
+      repeating a parameter (`?domain=A&domain=B`) matches any of the values; `q` is a
+      case-insensitive free-text search; `sort` / `order` for ordering; `page` / `limit`
+      for pagination. Invalid filter values return `400`.
+    - Every request should send an `X-Request-Id` header; it is echoed back in the response
+      and should be quoted when reporting issues.
+
+    ## Versioning
+    The major version is part of the base path (`/v1`). Additive changes (new endpoints,
+    new optional fields, new enum values) may ship within a major version — clients must
+    ignore unknown fields. Breaking changes require a new major version.
+  contact:
+    name: ONDC Workbench Team
+    # email: TODO
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production (TBD)
+  - url: https://sandbox.api.example.com/v1
+    description: Sandbox (TBD)
+  - url: http://localhost:4010
+    description: Local mock server (`npm run mock`)
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Sessions
+    description: Workbench test sessions.
+  - name: Flows
+    description: Display information (titles, descriptions, tags, steps) for test flows.
+  - name: System
+    description: Service health and diagnostics.
+
+paths:
+  /organizations/{org_id}/sessions:
+    $ref: paths/organizations_{org_id}_sessions.yaml
+  /flows:
+    $ref: paths/flows.yaml
+  /health:
+    $ref: paths/health.yaml
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Send `Authorization: Bearer <token>`. Auth mechanism is TBD
+        (placeholder until finalised with the integration partner).

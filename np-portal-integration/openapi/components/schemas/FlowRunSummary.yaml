@@ -1,0 +1,34 @@
+title: FlowRunSummary
+description: |
+  Results of one test flow within a session.
+
+  Each run or retry of the flow creates a new transaction. Step counts refer to the
+  **latest** transaction (the last entry in `transaction_ids`). Steps that are neither
+  passed nor failed have not run yet: `total_steps - passed_steps - failed_steps`.
+type: object
+required: [flow_id, total_steps, passed_steps, failed_steps, transaction_ids]
+properties:
+  flow_id:
+    type: string
+    description: |
+      Flow identifier. Use it with `GET /flows` (together with the session's `domain`,
+      `version` and `usecase_id`) to get the flow's title, description, tags and steps.
+  total_steps:
+    type: integer
+    minimum: 0
+    description: Number of steps in the flow.
+  passed_steps:
+    type: integer
+    minimum: 0
+    description: Steps that passed in the latest transaction.
+  failed_steps:
+    type: integer
+    minimum: 0
+    description: Steps that failed in the latest transaction.
+  transaction_ids:
+    type: array
+    description: |
+      Transaction IDs for this flow, oldest first. A new ID is added on each retry.
+      Empty if the flow has not been run yet.
+    items:
+      type: string

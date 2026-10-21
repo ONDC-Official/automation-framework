@@ -1,0 +1,25 @@
+title: FlowStepMeta
+description: Display information for one step of a flow.
+type: object
+required: [step_key, action, owner, label, description, unsolicited]
+properties:
+  step_key:
+    type: string
+    description: Identifier of the step, unique within the flow.
+  action:
+    type: string
+    description: Beckn action for this step, e.g. `search`, `on_search`, `select`.
+  owner:
+    $ref: NpType.yaml
+  label:
+    type: [string, 'null']
+    description: Short display label for the step.
+  description:
+    type: [string, 'null']
+    description: What happens in this step.
+  unsolicited:
+    type: boolean
+    description: True for unsolicited callbacks (sent without a matching request).
+  pair_step_key:
+    type: [string, 'null']
+    description: Key of the matching request/callback step, e.g. `search` ↔ `on_search`.

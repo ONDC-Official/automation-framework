@@ -1,0 +1,9 @@
+description: Rate limit exceeded. Retry after the number of seconds in the Retry-After header.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/rate-limited
+      title: Too many requests
+      status: 429

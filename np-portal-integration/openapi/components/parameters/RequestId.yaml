@@ -1,0 +1,8 @@
+name: X-Request-Id
+in: header
+required: false
+description: Client-generated correlation ID (UUID recommended). Echoed back in the response.
+schema:
+  type: string
+  maxLength: 128
+example: 3f1c2a9e-8d4b-4e2a-9b1f-6a7c5d2e1f00

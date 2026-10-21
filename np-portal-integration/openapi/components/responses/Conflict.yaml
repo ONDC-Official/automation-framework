@@ -1,0 +1,9 @@
+description: The request conflicts with the current state of the resource.
+content:
+  application/problem+json:
+    schema:
+      $ref: ../schemas/Problem.yaml
+    example:
+      type: https://api.example.com/errors/conflict
+      title: Conflict
+      status: 409
