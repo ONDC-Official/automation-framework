@@ -2,6 +2,12 @@
 
 OpenAPI 3.1 contract for the NP portal third-party integration.
 
+- **API docs:** https://ondc-official.github.io/automation-framework/
+- **Spec file:** https://ondc-official.github.io/automation-framework/openapi.yaml ([JSON](https://ondc-official.github.io/automation-framework/openapi.json))
+
+Docs are rebuilt and published automatically on every push to the `np-portal-integration`
+branch that touches this folder (`.github/workflows/np-portal-integration-docs.yml`).
+
 ## Layout
 
 ```

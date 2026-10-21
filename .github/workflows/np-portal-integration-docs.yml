@@ -1,0 +1,56 @@
+name: NP Portal Integration Docs
+
+on:
+  push:
+    branches: [np-portal-integration]
+    paths:
+      - 'np-portal-integration/**'
+      - '.github/workflows/np-portal-integration-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: np-portal-integration
+    env:
+      REDOCLY_TELEMETRY: 'off'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: np-portal-integration/package-lock.json
+
+      - run: npm ci
+
+      # lint -> bundle (dist/openapi.yaml, dist/openapi.json) -> docs (dist/index.html)
+      - run: npm run build
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: np-portal-integration/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
