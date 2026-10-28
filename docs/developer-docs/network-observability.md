@@ -37,9 +37,9 @@ For example:
 
 ## When and What to Share with NO?
 
-Once a Network Participant is subscribed to the **Production Registry**, the NP can generate the bearer token from the **NP Portal** under **Configuration Settings**. This bearer token is then used to push transaction logs to the NO API.
+Once a Network Participant is subscribed to the **Pre-prod Registry** /**Production Registry**, the NP can generate the bearer token from the **NP Portal** under **Configuration Settings**. This bearer token is then used to push transaction logs to the NO API.
 
-> **Important:** This bearer token is valid only for the **Production** stage.
+> **Important:** This bearer token is valid only for the  **Pre-prod**/**Production** stage.
 
 ### What to Share
 
@@ -58,12 +58,27 @@ The Network Participant must share the transaction JSON from **`on_search` onwar
 
 NO requirements are **policy-mandatory** to ensure compliance with the ONDC [notification](https://ondc-static-website-media.s3.ap-south-1.amazonaws.com/ondc-website-media/downloads/notifications/ONDC_Notification_Network_Observability_on_ONDC_Network_14June2023.pdf).
 
-### API Endpoint
+### Pre-Prod API Endpoint
+
+| Property | Value |
+|----------|-------|
+| **Base URL** | `https://analytics-api-pre-prod.aws.ondc.org` |
+| **API Endpoint** | `https://analytics-api-pre-prod.aws.ondc.org/v1/api/push-txn-logs` |
+
+### Production API Endpoint
 
 | Property | Value |
 |----------|-------|
 | **Base URL** | `https://analytics-api.aws.ondc.org` |
 | **API Endpoint** | `https://analytics-api.aws.ondc.org/v1/api/push-txn-logs` |
+
+---
+
+### Pre-Prod Dashboard
+Link to Preprod dashboard https://analytics-dashboard.ondc.org/public/dashboard/83a560f2-cc19-4b9c-a2a3-95047b775ea8
+
+### Prod Dashboard
+Once logs of an order are pushed to NO in Production, NP will recevie Prod NO dashboard link to there registered email id.
 
 ---
 
@@ -2474,6 +2489,6 @@ The Network Observability API responds with an **HTTP 200** response.
 
 ---
 
-**Q: How is this token different from the Preprod NO Token shared during Preprod stage testing?**
+**Q: How is Prod token different from the Preprod NO Token shared during Preprod stage testing?**
 
 The Preprod Token is valid **only** during the Preprod stage and for the Preprod NO API endpoint. The Preprod token will not work for the Prod NO API, and vice versa. The Preprod NO and Prod NO have **different endpoints**.
