@@ -22,12 +22,12 @@ The single most important architectural fact:
 
 > **`automation-specifications` is the source of truth, not the code.**
 > A domain spec written in YAML is compiled by `@ondc/build-tools` into a single
-> `build.yaml`, which `@ondc/api-service-generator` then turns into a complete, working
-> Express service. Everything else in the system is infrastructure arranged around that
-> generated service.
+> `build.yaml`, which `@ondc/api-service-generator` then turns into a **Go** service:
+> a set of compiled plugins plus config, loaded into a Beckn-ONIX server. Everything
+> else in the system is infrastructure arranged around that generated service.
 
 Internalising this early saves a lot of confusion. Most of the protocol behaviour you will
-want to change lives in YAML, not in TypeScript.
+want to change lives in YAML, not in application code.
 
 ### The pipeline
 
@@ -39,16 +39,58 @@ automation-specifications/config/     (YAML spec: paths, flows, validations, att
     build.yaml                        (single resolved artifact)
         │
         │  @ondc/build-tools validate
-        │  @ondc/api-service-generator
+        │  @ondc/api-service-generator      (IS_ONIX_ENABLED=true)
         ▼
-    api-service/build-output/         (a generated Express service, Dockerfile included)
+    api-service/build-output/temp/
+        ├── automation-beckn-plugins/  13 Go plugins   (101 .go files)
+        ├── validationpkg/             generated Go validators (40 .go files)
+        ├── config/adapter.yaml        declarative module/handler/plugin/step pipeline
+        └── schemas/ondc_<domain>/     JSON schemas
         │
         │  docker compose build
+        │    stage 1: golang:1.25.5      → compiles plugins to .so
+        │    stage 2: automation-beckn-onix base image (Debian 13 + Go + server source)
         ▼
     api-<domain>-<version> container   ← behind an nginx gateway on :3032
 ```
 
 `scripts/build-api-service.sh` drives this entire pipeline end to end.
+
+### The protocol engine is Go, not TypeScript
+
+This is the most important thing to get right about the architecture, and raw file
+counts actively mislead here. Counting source files suggests TypeScript dominates
+(~600 `.ts`/`.tsx` against 16 `.go` in the recorder). But the **protocol runtime** —
+signing, schema validation, context validation, routing, encryption, observability — is
+Go, generated per domain and loaded as `.so` plugins into an ONIX server.
+
+The thirteen plugins:
+
+```
+router                signer                  signvalidator
+schemavalidator       ondc-validator          encryption-middleware
+outgoing-encryption-middleware                network-observability
+cache                 workbench-main          workbench-keymanager
+workbench-callback-redirect
+```
+
+The TypeScript services are the **workbench around** that engine — UI, sessions,
+reporting, config resolution, mock counterparty. They are not the protocol
+implementation.
+
+The server prints its assembled pipeline at startup, and that line is the request
+lifecycle in one sentence:
+
+```
+Processor steps initialized:
+  [ondcWorkbenchReceiver  addRoute  validateSchema
+   ondcWorkbenchValidateContext  sign  validateOndcCallSave]
+```
+
+Worth knowing: the ONIX base image is Debian 13, ships Go at `/usr/local/go/bin/go`,
+**and contains the ONIX server's own source** under `/workspace/app`. Both the plugins
+and the server itself are therefore debuggable at source level — see
+[`DEBUGGING.md`](./DEBUGGING.md).
 
 ---
 
@@ -56,19 +98,23 @@ automation-specifications/config/     (YAML spec: paths, flows, validations, att
 
 | Repository | Language / stack | Scale | Role |
 |---|---|---|---|
-| `automation-specifications` | YAML DSL (OpenAPI 3.x + custom `x-` extensions) | 38 files on the FIS12 branch | Source of truth; compiles into a whole service |
+| `automation-specifications` | YAML DSL (OpenAPI 3.x + custom `x-` extensions) | 38 files on the FIS12 branch | Source of truth; compiles into the Go protocol engine |
+| *(generated)* `api-service/build-output` | **Go** plugins + generated validators, on a Beckn-ONIX server | 101 + 40 `.go` files per domain | The actual protocol engine — signing, validation, routing |
 | `automation-frontend` | React 19 + TS + Vite (frontend), TS + Express (backend) | 650 files — largest | Main workbench UI and its BFF |
 | `automation-report-pramaan` | Plain JS, Node 16, Mocha/Chai | 830 files, 13 MB | Legacy buyer/seller NP test APIs |
 | `automation-report-service` | TypeScript + Express | 404 ts + 111 yaml | Validation engine, per-domain protocol rules |
 | `automation-mock-playground-service` | TypeScript + Express | 75 ts | Simulates the counterparty network participant |
-| `automation-recorder-service` | Go 1.24 + gRPC + protobuf + Redis | 16 go | Audit event consumer — the only Go service |
+| `automation-recorder-service` | Go 1.24 + gRPC + protobuf + Redis | 16 go | Audit event consumer — the only *hand-written* Go service |
 | `automation-db` | TypeScript + TypeORM + Mongoose | 36 ts | Spec and session store |
 | `automation-backoffice` | TS + Express (backend), React + Vite (frontend) | 34 ts / 16 tsx | Admin console |
 | `automation-config-service` | TypeScript + Express | 16 ts — smallest | Config and flow resolution |
 
-Four real languages — **TypeScript** (six services), **React/TSX** (two UIs), **Go** (one),
-and **plain JavaScript** (pramaan) — plus YAML used as a domain-specific language, which is
-the one that matters most.
+Four real languages — **TypeScript** (six services), **React/TSX** (two UIs), **Go**
+(the recorder *and* the generated protocol engine), and **plain JavaScript** (pramaan) —
+plus YAML used as a domain-specific language, which is the one that matters most.
+
+Do not read the TypeScript file count as "this is a TypeScript system". Go carries the
+protocol; TypeScript carries the workbench around it. See §1.
 
 ### Shared idiom across the TypeScript services
 
@@ -441,11 +487,20 @@ architecture explains itself that way.
 
 Suggested order — each layer motivates the next:
 
-**1. `api-service/config/` → `api-service/build-output/`**
-The highest-leverage hour in the entire codebase. Read `config/index.yaml` (33 lines), then
-one flow file from `config/flows/BUSINESS_LOAN/`, then find the corresponding generated code
-in `build-output/`. Diffing declared intent against generated output teaches you more about
-this system than any other single activity.
+**1. `api-service/config/` → `api-service/build-output/temp/`**
+The highest-leverage hour in the entire codebase, and the one place the whole design
+becomes obvious. Read in this order:
+
+1. `config/index.yaml` (33 lines) — the root manifest; every `$ref` from here maps the DSL
+2. one flow file from `config/flows/BUSINESS_LOAN/` — what a flow declaration looks like
+3. `build-output/temp/config/adapter.yaml` — what that spec became: modules, handlers,
+   plugins, and the ordered `steps` list per route
+4. `build-output/temp/automation-beckn-plugins/ondc-validator/` — a plugin actually
+   implementing one of those steps in Go
+
+Diffing declared intent against generated output teaches you more about this system than
+any other single activity. Note step 3 is **not** an Express app — it is the ONIX
+adapter config that wires Go plugins into a request pipeline.
 
 **2. `automation-config-service`** — 16 TypeScript files, the smallest service. Warms you up
 on the shared Express/Redis/OpenTelemetry idiom that five other services repeat verbatim.
@@ -466,7 +521,7 @@ executable code, including `ONDC:FIS12/`. Compare these against
 which are hand-written.
 
 **6. `automation-recorder-service`** — 16 Go files, self-contained, with a clear README and
-seven test files. Fully independent of the rest; read it whenever you want a change of pace.
+seven test files. The only hand-written Go repo (the api-service Go is generated). Fully independent of the rest; read it whenever you want a change of pace.
 It consumes audit events over gRPC and performs three side effects (Redis cache update
 synchronously; log push and DB save asynchronously).
 
@@ -485,6 +540,10 @@ Read only when something specifically forces you there.
 ## 8. Phase 4 — The contribution loop
 
 Once you are editing rather than reading, stop rebuilding containers for every change.
+
+A full debug environment — VS Code launch configs for all four target types, per-service
+`.env.local` files, and Delve wiring for both Go targets — is set up and documented in
+[`DEBUGGING.md`](./DEBUGGING.md). The summary:
 
 **Hybrid setup:** leave infrastructure and peripheral services in Docker, and run the one
 service you are working on natively for hot reload and a real debugger.

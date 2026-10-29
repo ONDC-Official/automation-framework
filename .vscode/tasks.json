@@ -1,0 +1,113 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // Vite dev servers — used as preLaunchTask by the Chrome configs.
+    // isBackground + the problemMatcher let VS Code know when Vite is ready.
+    {
+      "label": "vite: ui-frontend",
+      "type": "shell",
+      "command": "npm run dev -- --port 3035 --strictPort",
+      "options": { "cwd": "${workspaceFolder}/automation-frontend/frontend" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE.*",
+          "endsPattern": ".*(Local|ready in).*"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "vite: backoffice-frontend",
+      "type": "shell",
+      "command": "npm run dev -- --port 5100 --strictPort",
+      "options": { "cwd": "${workspaceFolder}/automation-backoffice/frontend" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE.*",
+          "endsPattern": ".*(Local|ready in).*"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+
+    // ── Stack control ───────────────────────────────────────────────────
+    {
+      "label": "stack: up (core)",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stack: up (core + FIS12 api-service)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.api.yml up -d",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stack: status",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.api.yml ps -a --format 'table {{.Name}}\\t{{.Status}}'",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stack: stop one service (prompts)",
+      "type": "shell",
+      "command": "docker compose stop ${input:service}",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stack: start one service (prompts)",
+      "type": "shell",
+      "command": "docker compose start ${input:service}",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stack: tail logs (prompts)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.api.yml logs -f --tail 100 ${input:service}",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    }
+  ],
+
+  "inputs": [
+    {
+      "id": "service",
+      "type": "pickString",
+      "description": "Which service?",
+      "options": [
+        "db-service",
+        "config-service",
+        "playground-mock-service",
+        "report-service",
+        "ui-backend",
+        "ui-frontend",
+        "backoffice-backend",
+        "backoffice-frontend",
+        "recorder-service",
+        "api-ondcfis12-2-3-0",
+        "api-gateway",
+        "form-service",
+        "automation-user-management",
+        "report-pramaan-buyer",
+        "report-pramaan-seller",
+        "mongo",
+        "redis",
+        "jaeger"
+      ]
+    }
+  ]
+}

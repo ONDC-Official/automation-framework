@@ -1,0 +1,241 @@
+{
+  // Protocol Workbench — debug configurations.
+  //
+  // MODEL: the Docker stack is your infrastructure. To debug one service,
+  // stop its container and run it natively here. Each config binds the SAME
+  // host port its container published, so every other service keeps working
+  // without reconfiguration.
+  //
+  //   docker compose stop <service>      <- before launching
+  //   docker compose start <service>     <- when you're done
+  //
+  // Env comes from the .env.local file in each repo (gitignored locally via
+  // .git/info/exclude, so your submodule trees stay clean).
+  //
+  // See DEBUGGING.md for the per-target walkthrough.
+  "version": "0.2.0",
+  "configurations": [
+    // ─────────────────────────────────────────────────────────────────────
+    // TypeScript services — native, ts-node/tsx, breakpoints in .ts source
+    // ─────────────────────────────────────────────────────────────────────
+    {
+      "name": "TS: db-service (:5001)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-db",
+      "runtimeExecutable": "${workspaceFolder}/automation-db/node_modules/.bin/ts-node",
+      "runtimeArgs": ["--transpile-only", "-r", "reflect-metadata"],
+      "program": "${workspaceFolder}/automation-db/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-db/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 1 }
+    },
+    {
+      "name": "TS: config-service (:5556)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-config-service",
+      "runtimeExecutable": "${workspaceFolder}/automation-config-service/node_modules/.bin/ts-node",
+      "runtimeArgs": ["--transpile-only"],
+      "program": "${workspaceFolder}/automation-config-service/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-config-service/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 2 }
+    },
+    {
+      "name": "TS: mock-playground (:3031)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-mock-playground-service",
+      "runtimeExecutable": "${workspaceFolder}/automation-mock-playground-service/node_modules/.bin/tsx",
+      "program": "${workspaceFolder}/automation-mock-playground-service/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-mock-playground-service/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 3 }
+    },
+    {
+      "name": "TS: report-service (:3000)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-report-service",
+      "runtimeExecutable": "${workspaceFolder}/automation-report-service/node_modules/.bin/ts-node",
+      "runtimeArgs": ["--transpile-only"],
+      "program": "${workspaceFolder}/automation-report-service/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-report-service/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 4 }
+    },
+    {
+      "name": "TS: ui-backend (:3034)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-frontend/backend",
+      "runtimeExecutable": "${workspaceFolder}/automation-frontend/backend/node_modules/.bin/ts-node",
+      "runtimeArgs": ["--transpile-only"],
+      "program": "${workspaceFolder}/automation-frontend/backend/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-frontend/backend/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 5 }
+    },
+    {
+      "name": "TS: backoffice-backend (:5200)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/automation-backoffice/backend",
+      "runtimeExecutable": "${workspaceFolder}/automation-backoffice/backend/node_modules/.bin/ts-node",
+      "runtimeArgs": ["--transpile-only"],
+      "program": "${workspaceFolder}/automation-backoffice/backend/src/index.ts",
+      "envFile": "${workspaceFolder}/automation-backoffice/backend/.env.local",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "sourceMaps": true,
+      "presentation": { "group": "1-services", "order": 6 }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Attach — for any Node service started with --inspect (incl. in Docker
+    // via docker-compose.debug.yml). Port 9229 is published by that overlay.
+    // ─────────────────────────────────────────────────────────────────────
+    {
+      "name": "Attach: Node :9229 (container or local)",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "2-attach", "order": 1 }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // React frontends — Vite dev server on the host + Chrome debugging
+    // ─────────────────────────────────────────────────────────────────────
+    {
+      "name": "Web: ui-frontend (Chrome :3035)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3035",
+      "webRoot": "${workspaceFolder}/automation-frontend/frontend/src",
+      "sourceMapPathOverrides": {
+        "/src/*": "${workspaceFolder}/automation-frontend/frontend/src/*"
+      },
+      "preLaunchTask": "vite: ui-frontend",
+      "presentation": { "group": "3-web", "order": 1 }
+    },
+    {
+      "name": "Web: backoffice-frontend (Chrome :5100)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5100/backoffice/",
+      "webRoot": "${workspaceFolder}/automation-backoffice/frontend/src",
+      "sourceMapPathOverrides": {
+        "/src/*": "${workspaceFolder}/automation-backoffice/frontend/src/*"
+      },
+      "preLaunchTask": "vite: backoffice-frontend",
+      "presentation": { "group": "3-web", "order": 2 }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Go — recorder-service (Delve). Requires the Go extension.
+    // ─────────────────────────────────────────────────────────────────────
+    {
+      "name": "Go: recorder-service (:8090/:8089)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/automation-recorder-service",
+      "cwd": "${workspaceFolder}/automation-recorder-service",
+      "envFile": "${workspaceFolder}/automation-recorder-service/.env.local",
+      "presentation": { "group": "4-go", "order": 1 }
+    },
+    // automation-user-management — Go, NOT a Node service despite the name.
+    // It has no submodule in this repo: the compose file consumes a prebuilt
+    // GHCR image whose only content is a 21 MB compiled binary. Source was
+    // cloned separately and pinned to 3567db7 — the exact commit the running
+    // image (dev-0.0.0-3567db7) was built from — so frames match the binary.
+    //
+    //   docker compose stop automation-user-management     <- frees :8082
+    {
+      "name": "Go: user-management / developer-guide (:8082)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/automation-user-management",
+      "cwd": "${workspaceFolder}/automation-user-management",
+      "envFile": "${workspaceFolder}/automation-user-management/.env.local",
+      "presentation": { "group": "4-go", "order": 2 }
+    },
+    {
+      "name": "Go: user-management — debug current test file",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "envFile": "${workspaceFolder}/automation-user-management/.env.local",
+      "presentation": { "group": "4-go", "order": 3 }
+    },
+    {
+      "name": "Go: recorder — debug current test file",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "presentation": { "group": "4-go", "order": 2 }
+    },
+    {
+      "name": "Go: recorder — debug ALL tests",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/automation-recorder-service",
+      "presentation": { "group": "4-go", "order": 3 }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Go — ONIX api-service plugins, remote Delve inside the container.
+    // Start it first:  ./scripts/debug-api-service.sh
+    // ─────────────────────────────────────────────────────────────────────
+    {
+      "name": "Go: attach ONIX api-service (Delve :2345)",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "cwd": "${workspaceFolder}/api-service/build-output/temp",
+      "remotePath": "/temp",
+      "presentation": { "group": "4-go", "order": 4 }
+    }
+  ],
+
+  "compounds": [
+    {
+      "name": "Flow: ui-backend + report-service",
+      "configurations": ["TS: ui-backend (:3034)", "TS: report-service (:3000)"],
+      "stopAll": true,
+      "presentation": { "group": "5-compound", "order": 1 }
+    },
+    {
+      "name": "Flow: ui-backend + config + mock",
+      "configurations": [
+        "TS: ui-backend (:3034)",
+        "TS: config-service (:5556)",
+        "TS: mock-playground (:3031)"
+      ],
+      "stopAll": true,
+      "presentation": { "group": "5-compound", "order": 2 }
+    }
+  ]
+}

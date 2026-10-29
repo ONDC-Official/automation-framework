@@ -88,6 +88,13 @@ info "api-service/ is now on: $SPEC_BRANCH"
 
 cd "$API_SERVICE_DIR"
 
+# ── hide generated files from git status in the specs clone ──────────────────
+# Local-only (.git/info/exclude) so the automation-specifications repo is untouched.
+
+for pattern in /build.yaml /build-output/ /generated/ /nginx/; do
+  grep -qxF "$pattern" .git/info/exclude 2>/dev/null || echo "$pattern" >> .git/info/exclude
+done
+
 # ── parse config/ → build.yaml ───────────────────────────────────────────────
 
 step "Parsing config/"
