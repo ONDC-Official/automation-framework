@@ -159,7 +159,7 @@ ONIX_IMAGE="$(pinned ONIX_IMAGE)"
   || info "Plugins: official repository @ ${PLUGINS_REF:-main}"
 
 # Read the canonical db-service key from root .env so it stays in sync with the running stack
-_API_SVC_KEY=$(grep '^API_SVC_KEY=' "$FRAMEWORK_DIR/.env" 2>/dev/null | cut -d= -f2)
+_API_SVC_KEY=$(grep '^API_SVC_KEY=' "$FRAMEWORK_DIR/.env" 2>/dev/null | cut -d= -f2 || true)
 DB_KEY="${DB_API_KEY:-${_API_SVC_KEY:-local_api_service_key_change_me}}"
 DB_URL="${DB_API_BASE_URL:-http://localhost:5001}"
 
