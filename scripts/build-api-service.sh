@@ -371,8 +371,12 @@ info "Written: api-service/nginx/default.conf"
 # ── update API_SVC in root .env to point to nginx ────────────────────────────
 
 step "Updating API_SVC in root .env → http://api-service:80/api-service"
-sed -i '' 's|^API_SVC=.*|API_SVC=http://api-service:80/api-service|' "$FRAMEWORK_DIR/.env"
-info "API_SVC updated"
+if [[ -f "$FRAMEWORK_DIR/.env" ]]; then
+  sed -i '' 's|^API_SVC=.*|API_SVC=http://api-service:80/api-service|' "$FRAMEWORK_DIR/.env"
+  info "API_SVC updated"
+else
+  warn "$FRAMEWORK_DIR/.env not found; API_SVC not updated"
+fi
 
 # ── write docker-compose.api.yml ─────────────────────────────────────────────
 
