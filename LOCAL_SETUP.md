@@ -202,7 +202,7 @@ git submodule update --init --force
 
 ### 4.4 `build-api-service.sh` mutates tracked files
 
-Line 292 rewrites the committed `.env` in place:
+It rewrites the committed `.env` in place:
 
 ```bash
 sed -i '' 's|^API_SVC=.*|API_SVC=http://api-service:80/api-service|' "$FRAMEWORK_DIR/.env"
@@ -237,6 +237,7 @@ repository:
 |---|---|---|---|
 | `automation-specifications/` | `main` | `README.md`, `DEPLOY.md` only — CI workflow docs | Yes, as a submodule |
 | `api-service/` | `local-spec` (from `draft-FIS12-2.3.0`) | The actual `config/` spec tree | No, gitignored |
+| `api-services/<branch>/` | `local-spec-<branch>` | Further branches built side by side (§6), as git worktrees of `api-service/` | No, gitignored |
 
 The submodule on `main` has **no `config/` directory** — spec content only exists on the
 ~60 `draft-*` / `release-*` branches. `build-api-service.sh` makes its own clone into
@@ -467,7 +468,7 @@ docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
 ./scripts/build-api-service.sh draft-FIS12-2.3.0
 docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
 
-# Switching domains (only one can run at a time)
+# Switching domains
 docker compose -f docker-compose.yml -f docker-compose.api.yml down
 ./scripts/build-api-service.sh draft-RET10-1.2.5
 docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
@@ -476,6 +477,49 @@ docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
 Note that regenerating deletes `build-output/` wholesale (`rm -rf build-output`). Any
 hand-edits to generated code are lost on every spec regeneration — an important constraint
 when deciding whether a fix belongs in the spec or in the generator.
+
+### Several domains side by side
+
+Pass more than one branch to run several domains at once:
+
+```bash
+./scripts/build-api-service.sh draft-FIS12-2.3.0 draft-RET10-1.2.5
+docker compose -f docker-compose.yml -f docker-compose.api.yml up -d --build
+```
+
+- The first branch builds in `api-service/`, as before. Each further branch builds in
+  `api-services/<branch>/`, a git worktree of the same clone, with its own `config/` and
+  `build-output/`.
+- Each branch gets its own service (`api-<domain>-<version>`) in `docker-compose.api.yml`.
+- The nginx gateway on :3032 routes `/api-service/<domain>/<version>/` and
+  `/mock/<domain>/<version>/` to the right service; `/` still goes to the first one.
+- Two branches of the same domain and version can't run together; the script stops.
+- `scripts/debug-api-service.sh` debugs the first branch's service.
+
+### FD (`ONDC:FIS14:FD`)
+
+FD addresses REST resources rather than Beckn's `POST /<action>`, so an FD branch builds an
+FD-specific service: modules `issuer/`, `investor-app/` and `mock/`, the FD-only plugins
+`fdgate` and `fdtransport`, and a route table in `build-output/temp/config/fd_routes.yaml`.
+Its nginx route forwards the request URI unchanged, because FD signatures cover the path,
+and allows bodies up to 8 MiB.
+
+The FD-capable tools and plugins are not released yet. Until they are, point the script at
+local builds of them:
+
+```bash
+PWB_TOOLING_DIR=<tooling folder with the FD-capable build-tools, code generator and api-service-generator> \
+SPECS_LOCAL=./automation-specifications \
+PLUGINS_GIT=<local automation-beckn-plugins> PLUGINS_REF=feat/fd-workbench \
+  ./scripts/build-api-service.sh draft-FIS12-2.3.0 draft-FIS14FD-0.1.4
+```
+
+- `SPECS_LOCAL` supplies a branch that isn't on GitHub yet (`draft-FIS14FD-0.1.4`).
+- `PLUGINS_GIT` and `PLUGINS_REF` choose the plugins the generator clones. Unset,
+  `PLUGINS_REF` comes from `tooling/versions.env`.
+- The tools are FD-only additions: they generate the same output as the released tools for
+  every Beckn branch (checked with `automation-specifications/tooling/golden/golden.sh`), so
+  a Beckn branch can be built alongside with them.
 
 ---
 
@@ -651,6 +695,8 @@ git submodule update --init --force
 docker compose -f docker-compose.yml -f docker-compose.api.yml down -v
 ```
 
-**Gitignored, safe to delete and regenerate:** `api-service/`, `docker-compose.api.yml`.
+**Gitignored, safe to delete and regenerate:** `api-service/`, `api-services/`,
+`docker-compose.api.yml`. Remove a side-by-side branch with
+`git -C api-service worktree remove api-services/<branch>`.
 
 **Tracked, and modified by tooling:** `.env` (rewritten by `build-api-service.sh`).

@@ -27,7 +27,10 @@ WORKDIR /temp/automation-beckn-plugins
 # server is rebuilt with the same flags in stage 2.
 ENV GOFLAGS="-gcflags=all=-N -l"
 
-RUN chmod +x buildplugins.sh && ./buildplugins.sh /plugins
+# "fd" also builds the FD-only plugins (fdgate, fdtransport) for an ONDC:FIS14:FD service.
+ARG PWB_PROFILE=
+
+RUN chmod +x buildplugins.sh && PWB_PROFILE="${PWB_PROFILE}" ./buildplugins.sh /plugins
 
 # ── Stage 2: ONIX server + Delve ─────────────────────────────────────────────
 FROM ghcr.io/ondc-official/automation-beckn-onix:latest

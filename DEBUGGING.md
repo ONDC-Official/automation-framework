@@ -198,6 +198,11 @@ Set breakpoints in:
 - `api-service/build-output/temp/automation-beckn-plugins/` — the 13 plugins
 - `api-service/build-output/temp/validationpkg/` — generated validators
 
+With several branches built side by side (`build-api-service.sh A B`), the debugger runs
+the first branch's service, from `api-service/`. Put the branch you want to debug first.
+For an FD branch the debug image also builds `fdgate` and `fdtransport`; their sources are
+`fd-gate/`, `fd-transport/` and `pkg/fdroute`, `pkg/fdsig` in the plugins folder.
+
 > `build-output/` is **wiped on every spec regeneration** (`rm -rf build-output`).
 > Breakpoints survive (they're stored by path), but code edits there do not.
 

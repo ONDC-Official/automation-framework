@@ -1,5 +1,7 @@
 # Domain API service working directory — populated by scripts/build-api-service.sh
 api-service/
+# Further branches built side by side (git worktrees of api-service/)
+api-services/
 
 # Generated compose override — re-created by build-api-service.sh
 docker-compose.api.yml
