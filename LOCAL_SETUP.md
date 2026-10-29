@@ -514,7 +514,8 @@ PLUGINS_GIT=<local automation-beckn-plugins> PLUGINS_REF=feat/fd-workbench \
   ./scripts/build-api-service.sh draft-FIS12-2.3.0 draft-FIS14FD-0.1.4
 ```
 
-- `SPECS_LOCAL` supplies a branch that isn't on GitHub yet (`draft-FIS14FD-0.1.4`).
+- `SPECS_LOCAL` supplies branches from a local checkout: one that isn't on GitHub yet
+  (`draft-FIS14FD-0.1.4`), or local commits. Its branches take precedence over origin's.
 - `PLUGINS_GIT` and `PLUGINS_REF` choose the plugins the generator clones. Unset,
   `PLUGINS_REF` comes from `tooling/versions.env`.
 - The tools are FD-only additions: they generate the same output as the released tools for

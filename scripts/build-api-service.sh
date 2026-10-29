@@ -24,8 +24,8 @@
 # Environment:
 #   TOOLING_REF      ref of automation-specifications whose tooling/ pins the tools (origin/main)
 #   PWB_TOOLING_DIR  a local tooling/ folder to use instead, e.g. with unreleased tools
-#   SPECS_LOCAL      a local automation-specifications checkout; a branch missing on origin
-#                    is taken from it (e.g. an unpushed draft branch)
+#   SPECS_LOCAL      a local automation-specifications checkout; its branches take precedence
+#                    over origin's (e.g. an unpushed draft branch, or local commits)
 #   PLUGINS_GIT      automation-beckn-plugins repository the generator clones (official repo)
 #   PLUGINS_REF      plugins commit or branch (default: PLUGINS_REF in tooling/versions.env)
 #
@@ -80,13 +80,13 @@ list_branches() {
   echo ""
 }
 
-# A branch on origin, or else on SPECS_LOCAL (fetched as local/<branch>).
+# A branch of SPECS_LOCAL (fetched as local/<branch>), or else of origin.
 resolve_ref() {
   local branch="$1"
-  if git -C "$API_SERVICE_DIR" rev-parse --verify -q "origin/$branch" >/dev/null; then
-    echo "origin/$branch"
-  elif git -C "$API_SERVICE_DIR" rev-parse --verify -q "local/$branch" >/dev/null; then
+  if [[ -n "${SPECS_LOCAL:-}" ]] && git -C "$API_SERVICE_DIR" rev-parse --verify -q "local/$branch" >/dev/null; then
     echo "local/$branch"
+  elif git -C "$API_SERVICE_DIR" rev-parse --verify -q "origin/$branch" >/dev/null; then
+    echo "origin/$branch"
   else
     die "Branch '$branch' not found. Run '$0' with no args to list available branches."
   fi
