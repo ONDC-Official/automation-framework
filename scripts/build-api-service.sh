@@ -24,8 +24,10 @@
 
 set -euo pipefail
 
-GENERATOR_VERSION="1.0.2"
 SPECS_REMOTE="https://github.com/ONDC-Official/automation-specifications.git"
+# Tool versions come from tooling/ in automation-specifications (versions.env + package-lock.json).
+# TOOLING_REF picks another remote ref; PWB_TOOLING_DIR uses a local tooling/ folder instead.
+TOOLING_REF="${TOOLING_REF:-origin/main}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_DIR="$(dirname "$SCRIPT_DIR")"
@@ -91,19 +93,44 @@ cd "$API_SERVICE_DIR"
 # ── hide generated files from git status in the specs clone ──────────────────
 # Local-only (.git/info/exclude) so the automation-specifications repo is untouched.
 
-for pattern in /build.yaml /build-output/ /generated/ /nginx/; do
+for pattern in /build.yaml /build-output/ /generated/ /nginx/ /.pwb-tooling/ /node_modules; do
   grep -qxF "$pattern" .git/info/exclude 2>/dev/null || echo "$pattern" >> .git/info/exclude
 done
+
+# ── install the pinned tools ─────────────────────────────────────────────────
+
+if [[ -n "${PWB_TOOLING_DIR:-}" ]]; then
+  # A local tooling/ folder, e.g. automation-specifications/tooling on an unpushed branch.
+  step "Using pinned tools from $PWB_TOOLING_DIR"
+  TOOLING_DIR="$(cd "$PWB_TOOLING_DIR" && pwd)"
+  [[ -d "$TOOLING_DIR/node_modules" ]] || npm ci --prefix "$TOOLING_DIR" --no-audit --no-fund --loglevel=error
+else
+  step "Installing pinned tools from $TOOLING_REF:tooling/"
+  TOOLING_DIR="$API_SERVICE_DIR/.pwb-tooling"
+  git cat-file -e "${TOOLING_REF}:tooling/package-lock.json" 2>/dev/null \
+    || die "No tooling/ at $TOOLING_REF. Set TOOLING_REF to a ref that has it, or PWB_TOOLING_DIR to a local tooling/ folder."
+  rm -rf "$TOOLING_DIR"
+  mkdir -p "$TOOLING_DIR"
+  for f in package.json package-lock.json versions.env; do
+    git show "${TOOLING_REF}:tooling/$f" > "$TOOLING_DIR/$f"
+  done
+  npm ci --prefix "$TOOLING_DIR" --no-audit --no-fund --loglevel=error
+fi
+# The generator's scripts run ./node_modules/.bin/ondc-code-generator from the working
+# directory, so linking the pinned tools here pins the code generator as well.
+ln -sfn "$TOOLING_DIR/node_modules" node_modules
+TOOLS="$TOOLING_DIR/node_modules/.bin"
+info "$(grep -E '^(BUILD_TOOLS|API_SERVICE_GENERATOR|CODE_GENERATOR)_VERSION=' "$TOOLING_DIR/versions.env" | tr '\n' ' ')"
 
 # ── parse config/ → build.yaml ───────────────────────────────────────────────
 
 step "Parsing config/"
-npx -y @ondc/build-tools@latest parse -i config -o build.yaml
+"$TOOLS/ondc-tools" parse -i config -o build.yaml
 
 # ── validate ─────────────────────────────────────────────────────────────────
 
 step "Validating build.yaml"
-npx -y @ondc/build-tools@latest validate -i build.yaml
+"$TOOLS/ondc-tools" validate -i build.yaml
 
 # ── read domain + version ────────────────────────────────────────────────────
 
@@ -118,7 +145,7 @@ SERVICE_NAME="api-${DOMAIN_NORM}-${VERSION_NORM}"
 
 # ── generate ONIX build output ───────────────────────────────────────────────
 
-step "Generating ONIX build output (api-service-generator@$GENERATOR_VERSION)"
+step "Generating ONIX build output (pinned api-service-generator)"
 
 # Remove stale build-output so the generator starts clean
 rm -rf build-output
@@ -132,7 +159,7 @@ CONFIG_SERVICE_URL=http://config-service:5556 \
 MOCK_SERVER_URL=http://playground-mock-service:3000 \
 RECORDER_SERVICE_HTTP_URL=http://recorder-service:8090 \
 RECORDER_SERVICE_GRPC_URL=recorder-service:8089 \
-  npx -y "@ondc/api-service-generator@${GENERATOR_VERSION}" --config ./build.yaml
+  "$TOOLS/ondc-api-service-generator" --config ./build.yaml
 
 [[ -d build-output ]] || die "Generator did not produce build-output/ directory."
 
@@ -141,7 +168,7 @@ info "build-output/ is ready at: api-service/build-output/"
 # ── generate RAG table ───────────────────────────────────────────────────────
 
 step "Generating RAG table"
-npx -y @ondc/build-tools@latest gen-rag-table -i build.yaml -o generated
+"$TOOLS/ondc-tools" gen-rag-table -i build.yaml -o generated
 
 # ── push spec data to local db-service ───────────────────────────────────────
 
@@ -151,7 +178,7 @@ _API_SVC_KEY=$(grep '^API_SVC_KEY=' "$FRAMEWORK_DIR/.env" 2>/dev/null | cut -d= 
 DB_KEY="${DB_API_KEY:-${_API_SVC_KEY:-local_api_service_key_change_me}}"
 DB_URL="${DB_API_BASE_URL:-http://localhost:5001}"
 
-PUSH_OUTPUT=$(npx -y @ondc/build-tools@latest push-to-db \
+PUSH_OUTPUT=$("$TOOLS/ondc-tools" push-to-db \
     -f build.yaml \
     -t generated/raw_table.json \
     -u "$DB_URL" \
