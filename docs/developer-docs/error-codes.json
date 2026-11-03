@@ -1,0 +1,5 @@
+{
+  "label": "Core Error Codes",
+  "short_description": "ONDC error codes returned by gateway, buyer, seller and logistics apps",
+  "description": ""
+}

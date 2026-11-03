@@ -28,7 +28,7 @@ The Registry is ONDC's **trust and identity infrastructure**. It's a centralized
 | `subscriber_id`      | The NP's unique identifier (FQDN-based, e.g., `seller-app.com`)                              |
 | `subscriber_url`     | The base URL where this NP receives protocol callbacks                                       |
 | `signing_public_key` | Ed25519 public key — you use this to **verify** signatures on incoming requests from this NP |
-| `encr_public_key`    | X25519 encryption public key — used during onboarding challenge-response                     |
+| `encr_public_key`    | X25519 encryption public key — registered along with your signing key on the ONDC Portal     |
 | `unique_key_id`      | Key identifier (an NP can have multiple keys)                                                |
 | `type`               | Role — `BAP`, `BPP`, or `BG`                                                                 |
 | `domain`             | Which domains this NP operates in (e.g., `ONDC:RET10`, `ONDC:TRV11`)                         |
@@ -37,15 +37,9 @@ The Registry is ONDC's **trust and identity infrastructure**. It's a centralized
 
 ### When Your Code Talks to the Registry
 
-**1. During Onboarding (`/subscribe` → `/on_subscribe`)**
+**1. Registration (ONDC Portal)**
 
-This is a one-time (per environment) registration flow. Your server calls `/subscribe` with your metadata and public keys. The Registry calls back on `/on_subscribe` with an encrypted challenge. You decrypt it and return the plaintext. If successful, you're registered.
-
-```
-Your NP ── POST /subscribe ──────────> Registry
-Your NP <── POST /on_subscribe ─────── Registry  (encrypted challenge)
-Your NP ── plaintext response ────────> Registry  (sync)
-```
+Registering with the Registry — your subscriber details and public keys — is done on the [ONDC Portal](https://portal.ondc.org). Your server does not need to call `/subscribe` or implement `/on_subscribe`.
 
 **2. During Every Incoming Request (Signature Verification)**
 
@@ -65,11 +59,10 @@ If you need to find a counterparty's callback URL or verify they're a valid NP, 
 
 ### Registry API Endpoints
 
-| Environment    | `/subscribe`                               | `/v2.0/lookup`                          |
-| -------------- | ------------------------------------------ | --------------------------------------- |
-| **Staging** _(decommissioned)_ | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/v2.0/lookup` |
-| **Pre-Prod**   | `preprod.registry.ondc.org/ondc/subscribe` | `preprod.registry.ondc.org/v2.0/lookup` |
-| **Production** | `prod.registry.ondc.org/subscribe`         | `prod.registry.ondc.org/v2.0/lookup`    |
+| Environment    | `/v2.0/lookup`                          |
+| -------------- | --------------------------------------- |
+| **Pre-Prod**   | `preprod.registry.ondc.org/v2.0/lookup` |
+| **Production** | `prod.registry.ondc.org/v2.0/lookup`    |
 
 
 **`/v2.0/lookup` Request Example:**
@@ -203,8 +196,8 @@ The Registry is the **always-on background service** — your code hits it for k
 
 - **Forgetting to cache keys** — Hitting `/lookup` on every request adds latency and can get you rate-limited.
 - **Not handling key rotation** — If signature verification fails, re-fetch the key from the Registry before returning a NACK. The NP may have rotated keys.
-- **Mixing environment credentials** — Staging keys don't work in Pre-Prod. Pre-Prod tokens don't work in Prod. Each environment is completely isolated.
-- **Pre-Prod URL path difference** — Pre-Prod uses `/ondc/lookup` while Staging and Prod use `/lookup`. This catches people during environment migration.
+- **Mixing environment credentials** — Pre-Prod keys and tokens don't work in Prod. Each environment is completely isolated.
+- **Pre-Prod URL path difference** — Pre-Prod uses `/ondc/lookup` while Prod uses `/lookup`. This catches people during environment migration.
 
 **Gateway:**
 
