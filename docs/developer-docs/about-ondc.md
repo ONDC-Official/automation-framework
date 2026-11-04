@@ -372,9 +372,9 @@ When an NP receives a request:
 
 ### 7.4 Encryption (X25519)
 
-In addition to signing, NPs also generate an **X25519 encryption key pair** used during the onboarding challenge-response process. The encryption public key is registered in ASN.1 DER format (base64-encoded) in the Registry.
+In addition to signing, NPs also generate an **X25519 encryption key pair**. The encryption public key is registered in ASN.1 DER format (base64-encoded) through the ONDC Portal.
 
-This is primarily used during the `/subscribe` → `/on_subscribe` handshake with the Registry, where a challenge string must be decrypted using a shared key derived from the NP's private key and ONDC's public key.
+It is used to encrypt data between two NPs **only in use cases whose specification requires it**. See [Keys & Encryption](/developer-guide/docs/keys-and-encryption).
 
 ---
 
@@ -393,11 +393,10 @@ It does **not** participate in transactions — it only provides lookup and veri
 
 ### 8.2 Environments
 
-ONDC operates three environments:
+ONDC operates two environments:
 
 | Environment        | Registry URL                | Purpose                            |
 | ------------------ | --------------------------- | ---------------------------------- |
-| **Staging** _(decommissioned)_ | `staging.registry.ondc.org` | Initial development and testing    |
 | **Pre-Production** | `preprod.registry.ondc.org` | Integration testing with other NPs |
 | **Production**     | `prod.registry.ondc.org`    | Live transactions with real users  |
 
@@ -405,30 +404,13 @@ Each environment has its own set of keys, endpoints, and policies. Tokens and cr
 
 ### 8.3 Onboarding Flow (Simplified)
 
-```
-┌─────────────┐                              ┌──────────────┐
-│  Your NP    │                              │  ONDC        │
-│  Server     │                              │  Registry    │
-└──────┬──────┘                              └──────┬───────┘
-       │                                            │
-       │  1. Generate Ed25519 + X25519 key pairs    │
-       │                                            │
-       │  2. Register on NP Portal, get whitelisted │
-       │                                            │
-       │  3. Host ondc-site-verification.html       │
-       │     at https://<subscriber_id>/             │
-       │                                            │
-       │  4. POST /subscribe ──────────────────────>│
-       │                                            │
-       │<──────── POST /on_subscribe ───────────────│
-       │     (encrypted challenge string)           │
-       │                                            │
-       │  5. Decrypt challenge using shared key     │
-       │     Return plaintext as sync response ────>│
-       │                                            │
-       │<──────── 200 OK (registration confirmed) ──│
-       │                                            │
-```
+1. **Generate your key pairs** — Ed25519 for signing and X25519 for encryption. See [Keys & Encryption](/developer-guide/docs/keys-and-encryption).
+2. **Register on the [ONDC Portal](https://portal.ondc.org)** — sign up or sign in, submit your subscriber details and both public keys, and get whitelisted.
+3. **Get subscribed** — the portal adds you to the Registry:
+    - **Pre-Production:** the NP Portal invokes the admin APIs. Keys are not validated upfront, direct subscription is allowed, and no DNS TXT record is required.
+    - **Production:** generate and host a DNS TXT record; the portal then calls the admin subscription API.
+
+Registration with the Registry is completed through the portal — your server does not call `/subscribe` or implement `/on_subscribe`. See [Subscription Process](/developer-guide/docs/protocol#subscription-process) for the full steps.
 
 ### 8.4 Registry Lookup
 
@@ -521,9 +503,7 @@ Note that the Gateway is only involved in the `search` step. Everything from `se
 | **Protocol Specs**          | [github.com/ONDC-Official/automation-specifications](https://github.com/ONDC-Official/automation-specifications)                                              |
 | **Network Extension Layer** | [github.com/ONDC-Official/protocol-network-extension](https://github.com/ONDC-Official/protocol-network-extension)                                            |
 | **Signing & Verification**  | [developer-docs/registry/signing-verification.md](https://github.com/ONDC-Official/developer-docs/blob/main/registry/signing-verification.md)                 |
-| **Onboarding Guide**        | [developer-docs/registry/Onboarding of Participants.md](https://github.com/ONDC-Official/developer-docs/blob/main/registry/Onboarding%20of%20Participants.md) |
-| **Tech Resources Portal**   | [resources.ondc.org/tech-resources](https://resources.ondc.org/tech-resources)                                                                                |
-| **NP Portal**               | [portal.ondc.org](https://portal.ondc.org)                                                                                                                    |
+| **ONDC Portal**             | [portal.ondc.org](https://portal.ondc.org)                                                                                                                    |
 
 ---
 
