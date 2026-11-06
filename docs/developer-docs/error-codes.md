@@ -204,3 +204,24 @@ Returned by a Logistics Service Provider.
 | `66003` | Order processing in progress | Order processing in progress |
 | `66004` | Invalid Order | Order not found |
 | `66005` | Quote unavailable | Quote no longer available |
+
+
+---
+
+## Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **NACK (Negative Acknowledgment)** | Synchronous response containing an `error` object indicating a request was rejected or failed validation. |
+| **ACK (Acknowledgment)** | Synchronous positive receipt confirmation indicating a request was accepted for asynchronous processing. |
+| **Gateway** | Network infrastructure component handling search request multicast and discovery error codes (10000–10002). |
+| **Buyer App (BNP)** | Buyer Network Participant; consumer-facing application managing search, cart, and buyer-side errors (20000–27502). |
+| **Seller App (SNP)** | Seller Network Participant; provider-facing application managing catalog, order processing, and seller errors (30000–50008). |
+| **Logistics Buyer (LBNP)** | Network participant purchasing delivery services on behalf of an order (errors 62501–64002). |
+| **Logistics Provider (LSP)** | Logistics Service Provider executing physical pickup, carriage, and delivery fulfillment (errors 60001–66005). |
+| **Fulfillment TAT** | Turnaround Time quoted by a provider for order pickup, transit, or delivery. |
+| **PCC OTP** | Pickup Confirmation Code — One-Time Password used to verify package handover from seller to delivery partner. |
+| **DCC OTP** | Delivery Confirmation Code — One-Time Password used to verify final package handover to the buyer. |
+| **RTS (Ready to Ship)** | Seller milestone indicating that an order is packed, labeled, and ready for courier pickup. |
+| **OOS (Out of Stock)** | Inventory status indicating that a requested item or variant is currently unavailable. |
+| **Signature Verification** | Validation of the sender's cryptographic signature against the request payload; invalid signatures trigger error 10001 or 60005. |

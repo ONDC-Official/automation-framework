@@ -207,3 +207,25 @@ The Registry is the **always-on background service** — your code hits it for k
 - **Assuming a single `on_search` response** — A BAP may receive `on_search` callbacks from multiple BPPs for a single search. Your code should handle accumulating results over a window defined by the `ttl` in the context.
 
 ---
+
+
+## 5. Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **Registry** | Centralized trust and identity infrastructure storing public keys, subscriber URLs, and operational domains for every registered NP. |
+| **Gateway (BG)** | Beckn Gateway; an intermediary broadcaster that fans out `search` discovery requests to relevant BPPs based on domain and location. |
+| **BAP** | Beckn Application Platform — the buyer-side application initiating search, orders, and receiving callbacks. |
+| **BPP** | Beckn Provider Platform — the seller-side application providing catalog items, order confirmation, and fulfillment updates. |
+| **Network Participant (NP)** | Any registered platform operating as a BAP, BPP, or Gateway on the ONDC network. |
+| **Subscriber ID (`subscriber_id`)** | FQDN-based unique identifier assigned to an NP on the network. |
+| **Subscriber URL (`subscriber_url`)** | Base callback endpoint URL where an NP receives asynchronous protocol callbacks. |
+| **Signing Public Key (`signing_public_key`)** | Ed25519 public key fetched from the Registry to verify incoming digital signatures. |
+| **Encryption Public Key (`encr_public_key`)** | X25519 public key registered for end-to-end payload encryption between counterparties. |
+| **Unique Key ID (`unique_key_id`)** | Identifier distinguishing between multiple active key pairs of an NP to support key rotation. |
+| **Lookup (`/lookup`)** | Registry API endpoint used to query an NP's public keys, callback URL, and active status. |
+| **Vlookup (`/vlookup`)** | Verified lookup endpoint in the Registry providing signed participant records. |
+| **Authorization Header** | HTTP header carrying the sender's Ed25519 digital signature and keyId for message authentication. |
+| **X-Gateway-Authorization** | Forwarded HTTP header containing the Gateway's digital signature for multicast search verification. |
+| **Key Rotation** | The operational practice of updating cryptographic keys in the Registry while maintaining transaction continuity. |
+| **TTL (Time to Live)** | Context duration defining the accumulation window during which a BAP waits to aggregate `on_search` callbacks from multiple sellers. |

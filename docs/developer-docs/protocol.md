@@ -32,3 +32,20 @@ Participants will have to:
 When communicating over HTTP using Beckn APIs, the subscribers need to authenticate themselves to perform transactions with other subscribers. Due to the commercial nature of the transactions, every request/callback pair is considered to be a "contract" between two parties. Therefore, it is imperative that all requests and callbacks are digitally signed by the sender and subsequently verified by the receiver.
 
 See [Auth Tools](/developer-guide/auth-tools) for the signing and verification process, the header format and reference code.
+
+---
+
+## Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **Beckn Protocol** | Open-source, decentralized commerce protocol providing core specifications, message formats, and transaction APIs. |
+| **ONDC Network Extension Layer** | Domain-specific API contracts, policies, and network rules configured on top of the Beckn Protocol base layer. |
+| **Network Participant (NP)** | Any registered entity (buyer application, seller application, or gateway) on the ONDC network. |
+| **Registry** | Central trust repository storing participant metadata, public keys, subscriber IDs, and callback URLs. |
+| **Pre-Production Registry** | Testing and staging registry environment allowing direct subscription without DNS ownership validation. |
+| **Production Registry** | Live registry environment that requires DNS TXT record verification and portal administration to enroll participants. |
+| **Subscriber ID** | Unique FQDN-based identifier assigned to an NP to identify its transactions on the network. |
+| **DNS TXT Record** | Domain Name System text record hosted on the participant's domain to verify ownership during production onboarding. |
+| **Signing and Verification** | Cryptographic authentication where HTTP requests and callbacks are digitally signed by the sender and validated by the receiver. |
+| **Subscriber** | A registered network participant authorized to transact on the ONDC network using verified keys and endpoints. |
