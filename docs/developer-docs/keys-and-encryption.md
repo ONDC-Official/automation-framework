@@ -541,3 +541,25 @@ NP1 (Sender)                                    NP2 (Receiver)
 - Use a strong, cryptographically secure random number generator for key generation.
 - Use a **fresh 12-byte IV** for every encryption — never reuse an IV with the same key.
 - Use the correct encoding for each key type: raw for Ed25519 keys and X25519 private keys, ASN.1 DER for X25519 public keys.
+
+
+---
+
+## 5. Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **Network Participant (NP)** | Any registered entity on the ONDC network holding cryptographic key pairs for signing and encryption. |
+| **Ed25519** | High-performance elliptic-curve digital signature algorithm (RFC 8032) used for request and callback authentication. |
+| **X25519** | Elliptic-curve Diffie-Hellman key exchange function (RFC 7748) used to compute shared secrets between counterparties. |
+| **Signing Key Pair** | The Ed25519 private key (kept secret) and public key (registered in Registry) used to sign and verify payloads. |
+| **Encryption Key Pair** | The X25519 private key and ASN.1 DER-encoded public key used for end-to-end payload encryption. |
+| **ASN.1 DER** | Abstract Syntax Notation One (Distinguished Encoding Rules) binary encoding format required for X25519 public keys. |
+| **Diffie-Hellman (ECDH)** | Key agreement protocol allowing two participants to derive an identical shared secret over an insecure channel. |
+| **Shared Key** | Symmetric key derived via Diffie-Hellman used by sender and receiver to encrypt and decrypt payload data. |
+| **AES-GCM (AES-256-GCM)** | Authenticated symmetric cipher providing both confidentiality and data integrity verification for encrypted payloads. |
+| **Initialization Vector (IV) / Nonce** | A random 12-byte value generated uniquely for every encryption operation to prevent replay attacks and ciphertext predictability. |
+| **Authentication Tag (`authTag`)** | 16-byte integrity verification tag produced by AES-GCM to detect any tampering with the ciphertext. |
+| **BLAKE-512** | Cryptographic hashing algorithm used to compute digests of request bodies for digital signatures. |
+| **Registry** | Central trust infrastructure storing NP public keys accessible through lookup and vlookup endpoints. |
+| **Lookup API** | Registry query used by participants to retrieve a counterparty's public signing and encryption keys. |
