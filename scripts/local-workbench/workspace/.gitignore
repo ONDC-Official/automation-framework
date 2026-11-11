@@ -1,0 +1,10 @@
+# This workspace root is intentionally not a git repository; the two sub-repos
+# (automation-frontend, automation-mock-runner-lib) manage their own ignores.
+# Kept so that nothing here is accidentally picked up if that ever changes.
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# scripts/dev.js build output (the recorder binary)
+.local/
