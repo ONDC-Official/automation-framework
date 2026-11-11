@@ -1,0 +1,32 @@
+{
+	"name": "protocol-studio",
+	"private": true,
+	"version": "0.0.0",
+	"description": "Orchestrator for Protocol Studio (formerly Protocol Playground v2). Deliberately NOT an npm workspace - each sub-repo installs from its own package-lock.json so dependency versions never drift. `npm run dev` runs the full local stack (Redis + mock service + backend + Vite, plus the local workbench: Mongo, automation-db, registry stub, recorder, report service and the ONIX api-service) via scripts/dev.js. The frontend consumes the LOCAL automation-mock-runner-lib, installed by scripts/sync-local-lib.js.",
+	"scripts": {
+		"setup": "npm run prepare:install && npm run prepare:env && npm run install:lib && npm run install:be && npm run install:ui && npm run install:mock && npm run sync:lib && npm run verify:lib",
+		"install:lib": "npm --prefix automation-mock-runner-lib ci",
+		"install:be": "npm --prefix automation-frontend/backend ci",
+		"install:ui": "npm --prefix automation-frontend/frontend ci",
+		"install:mock": "npm --prefix automation-mock-playground-service ci",
+		"sync:lib": "node scripts/sync-local-lib.js",
+		"verify:lib": "node scripts/sync-local-lib.js --verify",
+		"build:lib": "npm --prefix automation-mock-runner-lib run build",
+		"watch:lib": "node scripts/watch-local-lib.js",
+		"dev": "npm run verify:lib && node scripts/dev.js",
+		"dev:ui": "npm run verify:lib && node scripts/dev.js --frontend-only",
+		"dev:be": "node scripts/dev.js --backend-only",
+		"build:be": "npm --prefix automation-frontend/backend run build",
+		"build:ui": "npm run verify:lib && npm --prefix automation-frontend/frontend run build",
+		"build": "npm run sync:lib && npm run build:be && npm --prefix automation-frontend/frontend run build",
+		"test": "npm run test:lib && npm run test:be && npm run test:ui && npm run test:mock",
+		"test:lib": "npm --prefix automation-mock-runner-lib test",
+		"test:be": "npm --prefix automation-frontend/backend test",
+		"test:ui": "npm --prefix automation-frontend/frontend test",
+		"test:mock": "npm --prefix automation-mock-playground-service test",
+		"validate:lib": "npm --prefix automation-mock-runner-lib run validate",
+		"lint:ui": "npm --prefix automation-frontend/frontend run lint",
+		"prepare:install": "node scripts/prepare-install.js",
+		"prepare:env": "node scripts/prepare-env.js"
+	}
+}
