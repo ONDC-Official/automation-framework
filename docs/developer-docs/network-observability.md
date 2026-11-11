@@ -15,6 +15,7 @@
 - [Error Payload Examples for 4xx or 5xx Errors Outside the API Contract](#error-payload-examples-for-any-4xx-or-5xx-errors-apart-from-the-api-contract)
 - [Schema Validation Error (To Be Released Soon)](#schema-validation-error-to-be-released-soon)
 - [FAQs](#faqs)
+- [Terminology](#terminology)
 
 ---
 
@@ -95,6 +96,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | init         | No              | `init`                 |
+
+<details>
+<summary><b>View Payload Example: init (Request)</b></summary>
 
 ```json
 {
@@ -179,6 +183,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 > **Note:** The `type` field corresponds to the API action name. The `data` object reflects the actual transaction payload.
 
 ---
@@ -188,6 +194,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | init         | Yes             | `init_response`        |
+
+<details>
+<summary><b>View Payload Example: init_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -217,6 +226,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 > **Note:** The synchronous response always contains the `context` object from the original request.
 
 ---
@@ -226,6 +237,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_init      | No              | `on_init`              |
+
+<details>
+<summary><b>View Payload Example: on_init (Request)</b></summary>
 
 ```json
 {
@@ -385,6 +399,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/on_init` (Synchronous Response)
@@ -392,6 +408,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_init      | Yes             | `on_init_response`     |
+
+<details>
+<summary><b>View Payload Example: on_init_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -425,6 +444,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ## 1. IGM Examples
@@ -436,6 +457,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | issue        | No              | `issue`                |
+
+<details>
+<summary><b>View Payload Example: issue (Request)</b></summary>
 
 ```json
 {
@@ -540,6 +564,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 > **Note:** The `data` object reflects the actual transaction payload.
 
 ---
@@ -549,6 +575,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | issue        | Yes             | `issue_response`       |
+
+<details>
+<summary><b>View Payload Example: issue_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -578,6 +607,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 > **Note:** The synchronous response always contains the `context` object.
 
 ---
@@ -587,6 +618,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_issue     | No              | `on_issue`             |
+
+<details>
+<summary><b>View Payload Example: on_issue (Request)</b></summary>
 
 ```json
 {
@@ -639,6 +673,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/on_issue` (Synchronous Response)
@@ -646,6 +682,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_issue     | Yes             | `on_issue_response`    |
+
+<details>
+<summary><b>View Payload Example: on_issue_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -678,6 +717,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/issue_status` (Request)
@@ -685,6 +726,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name  | Is it ACK/NACK? | `type` Value in Request |
 |---------------|:---------------:|------------------------|
 | issue_status  | No              | `issue_status`         |
+
+<details>
+<summary><b>View Payload Example: issue_status (Request)</b></summary>
 
 ```json
 {
@@ -712,6 +756,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/issue_status` (Synchronous Response)
@@ -719,6 +765,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name  | Is it ACK/NACK? | `type` Value in Request    |
 |---------------|:---------------:|----------------------------|
 | issue_status  | Yes             | `issue_status_response`    |
+
+<details>
+<summary><b>View Payload Example: issue_status_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -748,6 +797,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/on_issue_status` (Request)
@@ -755,6 +806,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name     | Is it ACK/NACK? | `type` Value in Request |
 |------------------|:---------------:|------------------------|
 | on_issue_status  | No              | `on_issue_status`      |
+
+<details>
+<summary><b>View Payload Example: on_issue_status (Request)</b></summary>
 
 ```json
 {
@@ -867,6 +921,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ### `/on_issue_status` (Synchronous Response)
@@ -874,6 +930,9 @@ The schema for pushing logs to Network Observability is described below for vari
 | Request Name     | Is it ACK/NACK? | `type` Value in Request        |
 |------------------|:---------------:|--------------------------------|
 | on_issue_status  | Yes             | `on_issue_status_response`     |
+
+<details>
+<summary><b>View Payload Example: on_issue_status_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -902,6 +961,8 @@ The schema for pushing logs to Network Observability is described below for vari
 }
 ```
 
+</details>
+
 ---
 
 ## RSF Examples
@@ -915,6 +976,9 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | recon        | No              | `recon`                |
+
+<details>
+<summary><b>View Payload Example: recon (Request)</b></summary>
 
 ```json
 {
@@ -1037,6 +1101,8 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 }
 ```
 
+</details>
+
 > **Note:** The `data` object reflects the actual transaction payload of that API.
 
 ---
@@ -1046,6 +1112,9 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_recon     | Yes             | `recon_response`       |
+
+<details>
+<summary><b>View Payload Example: recon_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -1081,6 +1150,8 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 }
 ```
 
+</details>
+
 > **Note:** The synchronous response always contains the `context` object.
 
 ---
@@ -1090,6 +1161,9 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_recon     | No              | `on_recon`             |
+
+<details>
+<summary><b>View Payload Example: on_recon (Request)</b></summary>
 
 ```json
 {
@@ -1223,6 +1297,8 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 }
 ```
 
+</details>
+
 > **Note:** The `data` object reflects the actual transaction payload of that API.
 
 ---
@@ -1232,6 +1308,9 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 | Request Name | Is it ACK/NACK? | `type` Value in Request  |
 |--------------|:---------------:|--------------------------|
 | on_recon     | Yes             | `on_recon_response`      |
+
+<details>
+<summary><b>View Payload Example: on_recon_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -1267,6 +1346,8 @@ For RSF (Reconciliation & Settlement Framework), the NP must submit all APIs â€”
 }
 ```
 
+</details>
+
 > **Note:** The synchronous response always contains the `context` object.
 
 ---
@@ -1282,6 +1363,9 @@ This section covers error payloads for errors defined within the API contract â€
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | init         | No              | `init`                 |
+
+<details>
+<summary><b>View Payload Example: init (Request)</b></summary>
 
 ```json
 {
@@ -1368,6 +1452,8 @@ This section covers error payloads for errors defined within the API contract â€
 }
 ```
 
+</details>
+
 > **Note:** The `data` object reflects the actual transaction payload.
 
 ---
@@ -1377,6 +1463,9 @@ This section covers error payloads for errors defined within the API contract â€
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | init         | Yes             | `init_response`        |
+
+<details>
+<summary><b>View Payload Example: init_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -1411,6 +1500,8 @@ This section covers error payloads for errors defined within the API contract â€
 }
 ```
 
+</details>
+
 > **Note:** The synchronous response always contains the `context` object.
 
 ---
@@ -1420,6 +1511,9 @@ This section covers error payloads for errors defined within the API contract â€
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_init      | No              | `on_init`              |
+
+<details>
+<summary><b>View Payload Example: on_init (Request)</b></summary>
 
 ```json
 {
@@ -1586,6 +1680,8 @@ This section covers error payloads for errors defined within the API contract â€
 }
 ```
 
+</details>
+
 ---
 
 ### `/on_init` (Synchronous Response)
@@ -1593,6 +1689,9 @@ This section covers error payloads for errors defined within the API contract â€
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_init      | Yes             | `on_init_response`     |
+
+<details>
+<summary><b>View Payload Example: on_init_response (Synchronous Response)</b></summary>
 
 ```json
 {
@@ -1622,6 +1721,8 @@ This section covers error payloads for errors defined within the API contract â€
 }
 ```
 
+</details>
+
 ---
 
 ## Error Payload Examples for any 4xx or 5xx Errors Apart from the API Contract
@@ -1635,6 +1736,9 @@ This section describes the NO schema for any errors â€” specifically **4xx and 5
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | init         | No              | `init`                 |
+
+<details>
+<summary><b>View Payload Example: init (Request)</b></summary>
 
 ```json
 {
@@ -1726,6 +1830,8 @@ This section describes the NO schema for any errors â€” specifically **4xx and 5
 }
 ```
 
+</details>
+
 > **Note:** The `error.type` value is set to `TECH-ERROR`. The `error.code` can take any 4xx or 5xx status code (e.g., `401`).
 
 ---
@@ -1735,6 +1841,9 @@ This section describes the NO schema for any errors â€” specifically **4xx and 5
 | Request Name | Is it ACK/NACK? | `type` Value in Request |
 |--------------|:---------------:|------------------------|
 | on_init      | No              | `on_init`              |
+
+<details>
+<summary><b>View Payload Example: on_init (Request)</b></summary>
 
 ```json
 {
@@ -1901,6 +2010,8 @@ This section describes the NO schema for any errors â€” specifically **4xx and 5
 }
 ```
 
+</details>
+
 > **Note:** The `error.type` value is set to `TECH-ERROR`. The `error.code` can take any 4xx or 5xx status code (e.g., `500`).
 
 ---
@@ -1955,13 +2066,21 @@ Ensures all mandatory fields are present as per the defined NO schema.
 
 **Example Request Payload:**
 
+<details>
+<summary><b>View Example Request Payload</b></summary>
+
 ```json
 {
   "type": "confirm"
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -1975,6 +2094,8 @@ Ensures all mandatory fields are present as per the defined NO schema.
   ]
 }
 ```
+
+</details>
 
 ---
 
@@ -1990,6 +2111,9 @@ Verifies that the data provided in each field matches the expected type (e.g., `
 
 **Example Request Payload:**
 
+<details>
+<summary><b>View Example Request Payload</b></summary>
+
 ```json
 {
   "type": "confirm",
@@ -1999,7 +2123,12 @@ Verifies that the data provided in each field matches the expected type (e.g., `
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -2013,6 +2142,8 @@ Verifies that the data provided in each field matches the expected type (e.g., `
   ]
 }
 ```
+
+</details>
 
 ---
 
@@ -2030,6 +2161,9 @@ Validates that the `type` or `action` field does not contain a value outside the
 - **Path:** `type`
 
 **Example Request Payload:**
+
+<details>
+<summary><b>View Example Request Payload</b></summary>
 
 ```json
 {
@@ -2106,7 +2240,12 @@ Validates that the `type` or `action` field does not contain a value outside the
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -2121,6 +2260,8 @@ Validates that the `type` or `action` field does not contain a value outside the
 }
 ```
 
+</details>
+
 ---
 
 #### Case 2: `type` Not in the Master List of Enums
@@ -2133,6 +2274,9 @@ Validates that the `type` or `action` field does not contain a value outside the
 - **Path:** `type`
 
 **Example Request Payload:**
+
+<details>
+<summary><b>View Example Request Payload</b></summary>
 
 ```json
 {
@@ -2209,7 +2353,12 @@ Validates that the `type` or `action` field does not contain a value outside the
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -2224,6 +2373,8 @@ Validates that the `type` or `action` field does not contain a value outside the
 }
 ```
 
+</details>
+
 ---
 
 #### Case 3: `data.context.action` Not in the Master List of Enums
@@ -2236,6 +2387,9 @@ Validates that the `type` or `action` field does not contain a value outside the
 - **Path:** `data.context.action`
 
 **Example Request Payload:**
+
+<details>
+<summary><b>View Example Request Payload</b></summary>
 
 ```json
 {
@@ -2312,7 +2466,12 @@ Validates that the `type` or `action` field does not contain a value outside the
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -2326,6 +2485,8 @@ Validates that the `type` or `action` field does not contain a value outside the
   ]
 }
 ```
+
+</details>
 
 ---
 
@@ -2342,6 +2503,9 @@ Warns NPs when their payload includes fields that are not expected by the schema
 - **Message:** `Successful`
 
 **Example Request Payload:**
+
+<details>
+<summary><b>View Example Request Payload</b></summary>
 
 ```json
 {
@@ -2419,7 +2583,12 @@ Warns NPs when their payload includes fields that are not expected by the schema
 }
 ```
 
+</details>
+
 **Example Response Payload:**
+
+<details>
+<summary><b>View Example Response Payload</b></summary>
 
 ```json
 {
@@ -2435,17 +2604,24 @@ Warns NPs when their payload includes fields that are not expected by the schema
 }
 ```
 
+</details>
+
 ---
 
 ### Success Response
 
 A request will be successfully ingested by the system if it passes all the validation checks mentioned above. In such cases, the request will receive an **HTTP 200** response with the following payload:
 
+<details>
+<summary><b>View Success Response Payload</b></summary>
+
 ```json
 {
   "message": "Successful"
 }
 ```
+
+</details>
 
 ---
 
@@ -2492,3 +2668,25 @@ The Network Observability API responds with an **HTTP 200** response.
 **Q: How is Prod token different from the Preprod NO Token shared during Preprod stage testing?**
 
 The Preprod Token is valid **only** during the Preprod stage and for the Preprod NO API endpoint. The Preprod token will not work for the Prod NO API, and vice versa. The Preprod NO and Prod NO have **different endpoints**.
+
+
+---
+
+## Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **Network Observability (NO)** | Framework and API endpoint designed to monitor the technical and business health of transactions across the ONDC network. |
+| **Bearer Token** | Authorization credential linked to an NP's subscriber ID and participant type, generated from the NP Portal to authenticate log pushes. |
+| **Network Participant (NP)** | Any registered buyer application, seller application, or gateway pushing transaction logs to the NO API. |
+| **Subscriber ID** | Unique FQDN-based identifier of the network participant associated with each bearer token. |
+| **Production Registry** | Live ONDC registry environment where production participants generate their live NO bearer tokens. |
+| **Preprod Stage / Preprod Token** | Staging environment and corresponding token valid solely for pushing logs to the pre-production NO endpoint. |
+| **Synchronous Response** | Immediate HTTP response returned upon receiving an API call (ACK, NACK, or error payload), both of which must be pushed to NO. |
+| **ACK (Acknowledgment)** | Positive receipt confirmation indicating an API request was accepted for asynchronous processing. |
+| **NACK (Negative Acknowledgment)** | Error response indicating an API request was rejected with error code and description. |
+| **IGM (Issue & Grievance Management)** | Protocol APIs (`issue`, `on_issue`, `issue_status`, `on_issue_status`) for dispute resolution whose logs must be submitted to NO. |
+| **RSF (Reconciliation & Settlement Framework)** | Protocol APIs (`settle`, `on_settle`, `receiver_recon`) for financial settlement whose payloads must be submitted to NO. |
+| **Context (`context`)** | Metadata block in every transaction payload containing action, domain, transaction_id, message_id, timestamps, and routing details. |
+| **Schema Validation** | Automated syntactic and structural checks verifying mandatory fields, data types, and allowed enum values before log ingestion. |
+| **HTTP 200** | Success status code returned by the NO API upon successful ingestion of transaction logs. |

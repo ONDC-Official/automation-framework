@@ -28,7 +28,7 @@ The Registry is ONDC's **trust and identity infrastructure**. It's a centralized
 | `subscriber_id`      | The NP's unique identifier (FQDN-based, e.g., `seller-app.com`)                              |
 | `subscriber_url`     | The base URL where this NP receives protocol callbacks                                       |
 | `signing_public_key` | Ed25519 public key — you use this to **verify** signatures on incoming requests from this NP |
-| `encr_public_key`    | X25519 encryption public key — used during onboarding challenge-response                     |
+| `encr_public_key`    | X25519 encryption public key — registered along with your signing key on the ONDC Portal     |
 | `unique_key_id`      | Key identifier (an NP can have multiple keys)                                                |
 | `type`               | Role — `BAP`, `BPP`, or `BG`                                                                 |
 | `domain`             | Which domains this NP operates in (e.g., `ONDC:RET10`, `ONDC:TRV11`)                         |
@@ -37,15 +37,9 @@ The Registry is ONDC's **trust and identity infrastructure**. It's a centralized
 
 ### When Your Code Talks to the Registry
 
-**1. During Onboarding (`/subscribe` → `/on_subscribe`)**
+**1. Registration (ONDC Portal)**
 
-This is a one-time (per environment) registration flow. Your server calls `/subscribe` with your metadata and public keys. The Registry calls back on `/on_subscribe` with an encrypted challenge. You decrypt it and return the plaintext. If successful, you're registered.
-
-```
-Your NP ── POST /subscribe ──────────> Registry
-Your NP <── POST /on_subscribe ─────── Registry  (encrypted challenge)
-Your NP ── plaintext response ────────> Registry  (sync)
-```
+Registering with the Registry — your subscriber details and public keys — is done on the [ONDC Portal](https://portal.ondc.org). Your server does not need to call `/subscribe` or implement `/on_subscribe`.
 
 **2. During Every Incoming Request (Signature Verification)**
 
@@ -65,11 +59,10 @@ If you need to find a counterparty's callback URL or verify they're a valid NP, 
 
 ### Registry API Endpoints
 
-| Environment    | `/subscribe`                               | `/v2.0/lookup`                          |
-| -------------- | ------------------------------------------ | --------------------------------------- |
-| **Staging** _(decommissioned)_ | `staging.registry.ondc.org/subscribe`      | `staging.registry.ondc.org/v2.0/lookup` |
-| **Pre-Prod**   | `preprod.registry.ondc.org/ondc/subscribe` | `preprod.registry.ondc.org/v2.0/lookup` |
-| **Production** | `prod.registry.ondc.org/subscribe`         | `prod.registry.ondc.org/v2.0/lookup`    |
+| Environment    | `/v2.0/lookup`                          |
+| -------------- | --------------------------------------- |
+| **Pre-Prod**   | `preprod.registry.ondc.org/v2.0/lookup` |
+| **Production** | `prod.registry.ondc.org/v2.0/lookup`    |
 
 
 **`/v2.0/lookup` Request Example:**
@@ -203,8 +196,8 @@ The Registry is the **always-on background service** — your code hits it for k
 
 - **Forgetting to cache keys** — Hitting `/lookup` on every request adds latency and can get you rate-limited.
 - **Not handling key rotation** — If signature verification fails, re-fetch the key from the Registry before returning a NACK. The NP may have rotated keys.
-- **Mixing environment credentials** — Staging keys don't work in Pre-Prod. Pre-Prod tokens don't work in Prod. Each environment is completely isolated.
-- **Pre-Prod URL path difference** — Pre-Prod uses `/ondc/lookup` while Staging and Prod use `/lookup`. This catches people during environment migration.
+- **Mixing environment credentials** — Pre-Prod keys and tokens don't work in Prod. Each environment is completely isolated.
+- **Pre-Prod URL path difference** — Pre-Prod uses `/ondc/lookup` while Prod uses `/lookup`. This catches people during environment migration.
 
 **Gateway:**
 
@@ -214,3 +207,25 @@ The Registry is the **always-on background service** — your code hits it for k
 - **Assuming a single `on_search` response** — A BAP may receive `on_search` callbacks from multiple BPPs for a single search. Your code should handle accumulating results over a window defined by the `ttl` in the context.
 
 ---
+
+
+## 5. Terminology
+
+| Term | Definition |
+| ---- | ---------- |
+| **Registry** | Centralized trust and identity infrastructure storing public keys, subscriber URLs, and operational domains for every registered NP. |
+| **Gateway (BG)** | Beckn Gateway; an intermediary broadcaster that fans out `search` discovery requests to relevant BPPs based on domain and location. |
+| **BAP** | Beckn Application Platform — the buyer-side application initiating search, orders, and receiving callbacks. |
+| **BPP** | Beckn Provider Platform — the seller-side application providing catalog items, order confirmation, and fulfillment updates. |
+| **Network Participant (NP)** | Any registered platform operating as a BAP, BPP, or Gateway on the ONDC network. |
+| **Subscriber ID (`subscriber_id`)** | FQDN-based unique identifier assigned to an NP on the network. |
+| **Subscriber URL (`subscriber_url`)** | Base callback endpoint URL where an NP receives asynchronous protocol callbacks. |
+| **Signing Public Key (`signing_public_key`)** | Ed25519 public key fetched from the Registry to verify incoming digital signatures. |
+| **Encryption Public Key (`encr_public_key`)** | X25519 public key registered for end-to-end payload encryption between counterparties. |
+| **Unique Key ID (`unique_key_id`)** | Identifier distinguishing between multiple active key pairs of an NP to support key rotation. |
+| **Lookup (`/lookup`)** | Registry API endpoint used to query an NP's public keys, callback URL, and active status. |
+| **Vlookup (`/vlookup`)** | Verified lookup endpoint in the Registry providing signed participant records. |
+| **Authorization Header** | HTTP header carrying the sender's Ed25519 digital signature and keyId for message authentication. |
+| **X-Gateway-Authorization** | Forwarded HTTP header containing the Gateway's digital signature for multicast search verification. |
+| **Key Rotation** | The operational practice of updating cryptographic keys in the Registry while maintaining transaction continuity. |
+| **TTL (Time to Live)** | Context duration defining the accumulation window during which a BAP waits to aggregate `on_search` callbacks from multiple sellers. |
