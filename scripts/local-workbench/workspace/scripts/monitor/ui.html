@@ -154,8 +154,12 @@ function learn(item) {
 	const t = item.ids?.transaction_id, s = item.ids?.session_id;
 	if (t && s) { if (!state.txnSessions.has(t)) state.txnSessions.set(t, new Set()); state.txnSessions.get(t).add(s); }
 }
+// GETs the server makes only because the UI polled: the backend's /flow/current-state
+// handler (polled by the flow pages) asks the mock for the same status every time.
+const POLL_PATHS = [/\/flows\/current-status$/];
 function isPolling(r) {
-	return r.from === "frontend" && r.method === "GET";
+	if (r.method !== "GET") return false;
+	return r.from === "frontend" || POLL_PATHS.some((re) => re.test(r.url.split("?")[0]));
 }
 function matchQ(item) {
 	const q = state.q;
@@ -261,20 +265,21 @@ async function openTrace(id) {
 function renderTrace() {
 	const t = state.trace;
 	const showLogs = $("#traceLogs") ? $("#traceLogs").checked : true;
-	const events = [...t.requests.map((r) => ({ ...r, _k: "r" })), ...(showLogs ? t.logs.map((l) => ({ ...l, _k: "l" })) : [])]
+	const reqs = $("#hidePolling").checked ? t.requests.filter((r) => !isPolling(r)) : t.requests;
+	const events = [...reqs.map((r) => ({ ...r, _k: "r" })), ...(showLogs ? t.logs.map((l) => ({ ...l, _k: "l" })) : [])]
 		.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : a.id - b.id));
 	const used = new Set();
 	for (const e of events) e._k === "r" ? (used.add(e.from), used.add(e.to)) : used.add(e.service);
 	const lanes = SERVICES.filter((s) => used.has(s)).concat([...used].filter((s) => !SERVICES.includes(s)));
 	const cols = `90px repeat(${lanes.length}, minmax(110px, 1fr))`;
 	const pos = (s) => lanes.indexOf(s);
-	const errs = t.requests.filter(isErr).length;
+	const errs = reqs.filter(isErr).length;
 	const head = `<div class="trace-head">
 		<button class="btn" id="traceBack">← all traces</button>
 		<span class="big">${esc(t.id)}</span>
 		${t.transactions.filter((x) => x !== t.id).map((x) => `<span class="legend">txn</span> ${idLink(x, "transaction")}`).join(" ")}
 		${t.sessions.filter((x) => x !== t.id).map((x) => `<span class="legend">session</span> <span class="mono" style="color:var(--muted)">${esc(x)}</span>`).join(" ")}
-		<span class="legend">${t.requests.length} hops · ${t.logs.length} log lines · ${errs ? `<span class="st err">${errs} errors</span>` : `<span class="st ok">no errors</span>`}</span>
+		<span class="legend">${reqs.length} hops · ${t.logs.length} log lines · ${errs ? `<span class="st err">${errs} errors</span>` : `<span class="st ok">no errors</span>`}</span>
 		<label class="toggle" style="margin-left:auto"><input type="checkbox" id="traceLogs" ${showLogs ? "checked" : ""}/> interleave logs</label></div>`;
 	if (!events.length) { $("#view-traces").innerHTML = head + `<div class="empty">Nothing recorded for this id yet.</div>`; return; }
 	const laneHead = `<div class="lane-head" style="grid-template-columns:${cols}"><div></div>${lanes.map((s) => `<div style="color:${color(s)}">${esc(LABEL[s] || s)}</div>`).join("")}</div>`;
@@ -373,7 +378,7 @@ document.addEventListener("click", (e) => {
 	if (e.target.id === "traceBack") { state.trace = null; renderTraces(); }
 });
 document.addEventListener("change", (e) => {
-	if (e.target.id === "traceLogs") renderTrace();
+	if (state.tab === "traces" && state.trace) renderTrace();
 	else render();
 });
 $("#q").addEventListener("keydown", (e) => {
