@@ -6,7 +6,7 @@
 
 ## Overview
 
-When a request fails, the receiver returns a **NACK** with an `error` object carrying one of the codes below. See [ACK / NACK](/developer-guide/docs/about-ondc#44-ack--nack--the-synchronous-handshake) in About ONDC for the response format.
+When a request fails, the receiver returns a **NACK** with an `error` object carrying one of the codes below. See [ACK and NACK](/developer-guide/docs/api-reference#14-synchronous-response-ack-and-nack) in the API Reference for the response format.
 
 ```json
 {

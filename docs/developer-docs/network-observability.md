@@ -48,6 +48,22 @@ The Network Participant must share the transaction JSON from **`on_search` onwar
 
 > **This must be an automated process from the NP's end and NOT a manual submission of logs to the NO API through Postman.**
 
+```mermaid
+sequenceDiagram
+    participant NP as Your app (BAP or BPP)
+    participant CP as Counterparty
+    participant NO as NO API (push-txn-logs)
+    NP->>CP: init
+    CP-->>NP: ACK
+    NP->>NO: Log the init request (type init)
+    NP->>NO: Log its response (type init_response)
+    CP->>NP: on_init
+    NP-->>CP: ACK
+    NP->>NO: Log on_init and its response
+    Note over NP,NO: Every call from on_search onwards, including IGM, RSF and unsolicited calls, PII anonymised, automated, same day
+    NO-->>NP: 200, or 200 with 2001 warning, or 400x error
+```
+
 ### Additional Requirements
 
 - All Buyer and Seller Network Participants are also requested to share all **unsolicited calls** that they receive/respond to for various APIs.
