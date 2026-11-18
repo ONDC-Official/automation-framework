@@ -30,6 +30,8 @@
  *             (4000 by default). The playground itself does not need it -- mock
  *             execution is entirely client-side -- but the rest of the app does, and
  *             promoting a playground config into a live flow session goes through it.
+ *             It gets STUDIO_SESSIONS_REQUIRE_LOGIN=false (Studio live sessions without
+ *             signing in) unless the shell or backend/.env sets that variable.
  *   frontend  automation-frontend/frontend, `vite --host` on 5173.
  *
  * The local workbench -- what scenario testing needs end to end, started whenever the
@@ -633,6 +635,14 @@ async function startWorkbench(redisHost, redisPort, links) {
 			}
 		: {};
 	const backendMockUrl = viaTap("backend", "mock", 4701, `http://localhost:${mockPort}/mock`);
+	// Deployed backends only create Studio live sessions for a signed-in user. Locally
+	// nobody signs in, and studio-e2e creates its sessions without a token, so the local
+	// stack switches that off -- unless the shell or backend/.env sets it explicitly.
+	if (
+		process.env.STUDIO_SESSIONS_REQUIRE_LOGIN === undefined &&
+		!envValue(backendEnvFile, "STUDIO_SESSIONS_REQUIRE_LOGIN", "")
+	)
+		backendEnv.STUDIO_SESSIONS_REQUIRE_LOGIN = "false";
 
 	if (wantMonitor) {
 		const health = [
