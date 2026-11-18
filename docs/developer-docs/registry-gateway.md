@@ -45,12 +45,30 @@ Registering with the Registry — your subscriber details and public keys — is
 
 When you receive an API call (e.g., a BAP sends you `/init`), you need to verify the sender's signature. To do that, you need their public key. You get it from the Registry via `/lookup` or `/vlookup`.
 
-```
-Incoming request with Authorization header
-  → Extract subscriber_id + unique_key_id from keyId
-  → POST /lookup to Registry (or use cached key)
-  → Get signing_public_key
-  → Verify Ed25519 signature
+```mermaid
+sequenceDiagram
+    participant S as Sender
+    participant Y as Your app
+    participant C as Key cache
+    participant R as Registry
+    S->>Y: Request with Authorization header
+    Y->>Y: Read subscriber_id and unique_key_id from keyId
+    Y->>C: Cached key?
+    alt Cached
+        C-->>Y: signing_public_key
+    else Not cached
+        Y->>R: POST /v2.0/lookup
+        R-->>Y: signing_public_key, subscriber URL, status
+        Y->>C: Store it (TTL: a few hours to a day)
+    end
+    Y->>Y: Verify the Ed25519 signature
+    opt Verification fails with a cached key
+        Y->>R: Look the key up again (it may have been rotated)
+        R-->>Y: Current signing_public_key
+        Y->>C: Replace the cached key
+        Y->>Y: Verify again
+    end
+    Y-->>S: ACK, or NACK if still invalid
 ```
 
 **3. During Outgoing Requests (Resolving the Counterparty)**
@@ -111,20 +129,24 @@ The Gateway eliminates this burden. The BAP sends **one** search request to the 
 
 You send `search` to the Gateway instead of individual BPPs. That's it. The Gateway is **only** involved in the `search` → `on_search` flow. Everything from `select` onward goes **directly** to the BPP, using the `bpp_id` and `bpp_uri` you received in the `on_search` callback.
 
-```
-         search flow (via Gateway)
-BAP ──search──> Gateway ──search──> BPP₁
-                         ──search──> BPP₂
-                         ──search──> BPP₃
-
-BPP₁ ──on_search──> BAP  (direct, not via Gateway)
-BPP₂ ──on_search──> BAP
-BPP₃ ──on_search──> BAP
-
-         everything after search (direct)
-BAP ──select──> BPP₂   (direct, using bpp_uri from on_search)
-BPP₂ ──on_select──> BAP
-...
+```mermaid
+sequenceDiagram
+    participant BAP as Buyer App (BAP)
+    participant GW as Gateway
+    participant B1 as Seller App 1
+    participant B2 as Seller App 2
+    BAP->>GW: search
+    GW-->>BAP: ACK
+    par Broadcast to matching seller apps
+        GW->>B1: search (+ X-Gateway-Authorization)
+    and
+        GW->>B2: search (+ X-Gateway-Authorization)
+    end
+    B1->>BAP: on_search (direct, not via the Gateway)
+    B2->>BAP: on_search (direct)
+    Note over BAP,B2: Everything after search is direct
+    BAP->>B2: select (to bpp_uri from on_search)
+    B2->>BAP: on_select
 ```
 
 **If you're a BPP:**
@@ -152,38 +174,45 @@ When the Gateway forwards a `search` request to a BPP, the request carries **two
 
 As a BPP developer, you should verify **both** signatures.
 
+```mermaid
+flowchart LR
+    BAP["<b>BAP</b><br/><small>signs the body</small>"]:::bap -- "search<br/>+ Authorization" --> GW["<b>Gateway</b><br/><small>adds its own signature</small>"]:::gw
+    GW -- "search + Authorization<br/>+ X-Gateway-Authorization" --> BPP["<b>Your BPP</b>"]:::bpp
+    BPP --> V1{"BAP's<br/>signature<br/>valid?"}
+    V1 -- "yes" --> V2{"Gateway's<br/>signature<br/>valid?"}
+    V2 -- "yes" --> ACK(["<b>ACK</b>"]):::ok
+    V1 -- "no" --> NACK(["<b>NACK</b>"]):::bad
+    V2 -- "no" --> NACK
+    classDef bap fill:#3b82f61a,stroke:#3b82f6,stroke-width:1.5px
+    classDef bpp fill:#10b9811a,stroke:#10b981,stroke-width:1.5px
+    classDef gw fill:#f59e0b1a,stroke:#f59e0b,stroke-width:1.5px
+    classDef ok fill:#22c55e1f,stroke:#22c55e,stroke-width:1.5px
+    classDef bad fill:#ef44441f,stroke:#ef4444,stroke-width:1.5px
+```
+
 ---
 
 ## 3. How They Work Together
 
-```
-                    ┌──────────────┐
-                    │   Registry   │
-                    │              │
-                    │  • Identity  │
-                    │  • Pub Keys  │
-                    │  • Lookup    │
-                    └──────┬───────┘
-                           │
-              lookup/verify│on every request
-                           │
-       ┌───────────────────┼───────────────────┐
-       │                   │                   │
- ┌─────┴─────┐      ┌─────┴─────┐      ┌─────┴─────┐
- │    BAP    │      │  Gateway  │      │    BPP    │
- │           │      │   (BG)    │      │           │
- │  Buyer    │      │  Search   │      │  Seller   │
- │  Side     │      │  Fan-out  │      │  Side     │
- └─────┬─────┘      └─────┬─────┘      └─────┬─────┘
-       │                   │                   │
-       │── search ────────>│── search ────────>│
-       │                   │                   │
-       │<──────────── on_search ───────────────│  (direct)
-       │                                       │
-       │── select ────────────────────────────>│  (direct)
-       │<──────────── on_select ───────────────│
-       │                                       │
-       │        ... rest of lifecycle ...       │
+```mermaid
+flowchart TB
+    subgraph NET[" "]
+        direction LR
+        BAP["<b>BAP</b><br/><small>buyer side</small>"]:::bap
+        GW["<b>Gateway</b><br/><small>search fan-out, once<br/>per transaction</small>"]:::gw
+        BPP["<b>BPP</b><br/><small>seller side</small>"]:::bpp
+        BAP -- "search" --> GW
+        GW -- "search" --> BPP
+        BPP -- "on_search, direct" --> BAP
+        BAP <-- "select … every later call, direct" --> BPP
+    end
+    R[("<b>Registry</b><br/><small>identity, public keys, lookup</small>")]:::reg
+    NET -. "lookup and verify on every request<br/>(keys cached)" .-> R
+    style NET fill:none,stroke:none
+    classDef bap fill:#3b82f61a,stroke:#3b82f6,stroke-width:1.5px
+    classDef bpp fill:#10b9811a,stroke:#10b981,stroke-width:1.5px
+    classDef gw fill:#f59e0b1a,stroke:#f59e0b,stroke-width:1.5px
+    classDef reg fill:#8b5cf61a,stroke:#8b5cf6,stroke-width:1.5px
 ```
 
 The Registry is the **always-on background service** — your code hits it for key lookups and verification. The Gateway is the **one-time fan-out for search** — your code interacts with it briefly at the start of a transaction, and then never again for that transaction.

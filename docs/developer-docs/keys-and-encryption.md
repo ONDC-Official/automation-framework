@@ -10,8 +10,28 @@ Every Network Participant (NP) holds **two key pairs**:
 
 | Key pair | Algorithm | Used for |
 | --- | --- | --- |
-| **Signing keys** | Ed25519 | Signing every request and callback, and verifying the counterparty's signature. See [Auth Tools](/developer-guide/auth-tools). |
+| **Signing keys** | Ed25519 | Signing every request and callback, and verifying the counterparty's signature. See [Signing & Verification](/developer-guide/auth-tools). |
 | **Encryption keys** | X25519 | Encrypting data between two NPs, **only in use cases whose specification requires it** ([section 3](#3-encryption-between-nps)). |
+
+```mermaid
+flowchart LR
+    subgraph NP["<b>Your app</b>: private keys never leave it"]
+        direction TB
+        SPriv["<b>Ed25519 private key</b><br/><small>signing</small>"]:::sign
+        EPriv["<b>X25519 private key</b><br/><small>encryption</small>"]:::enc
+    end
+    REG[("<b>Registry</b><br/><small>your Ed25519 and<br/>X25519 public keys</small>")]:::reg
+    OUT["<b>Every request and<br/>callback you send</b>"]:::sign
+    SK["<b>Shared key</b><br/><small>with one counterparty</small>"]:::enc
+    OTH["<b>Other apps</b>"]
+    SPriv -- "signs" --> OUT
+    OUT -- "verified with your<br/>Ed25519 public key" --> OTH
+    EPriv -. "only when the use case<br/>requires encryption" .-> SK
+    REG -. "your public keys" .-> OTH
+    classDef sign fill:#0081cc1a,stroke:#0081cc,stroke-width:1.5px
+    classDef enc fill:#ec48991a,stroke:#ec4899,stroke-width:1.5px
+    classDef reg fill:#8b5cf61a,stroke:#8b5cf6,stroke-width:1.5px
+```
 
 Both public keys are registered on the [ONDC Portal](https://portal.ondc.org) and stored in the ONDC Registry. Counterparty keys are fetched from the Registry using the **lookup** and **vlookup** APIs — see [Registry & Gateway](/developer-guide/docs/registry-gateway). Private keys always stay with the NP.
 
@@ -66,6 +86,20 @@ Public keys are verified by the Registry before they are stored.
 ### 3.1 Shared Key Derivation
 
 Two NPs derive the **same shared key** independently using the X25519 Diffie-Hellman key exchange — no secret is ever sent over the network.
+
+```mermaid
+sequenceDiagram
+    participant NP1 as NP1 (sender)
+    participant R as Registry
+    participant NP2 as NP2 (receiver)
+    NP1->>R: Fetch NP2's encryption public key
+    NP2->>R: Fetch NP1's encryption public key
+    NP1->>NP1: sharedKey = DiffieHellman(NP1 private, NP2 public)
+    NP2->>NP2: sharedKey = DiffieHellman(NP2 private, NP1 public)
+    Note over NP1,NP2: Both hold the same sharedKey. It is never sent over the network.
+    NP1->>NP2: Data encrypted with AES-GCM using sharedKey
+    NP2->>NP2: Decrypt with sharedKey
+```
 
 | Step | NP1 (sender) | NP2 (receiver) |
 | --- | --- | --- |
@@ -175,6 +209,17 @@ When payload encryption applies to a use case:
 - New fields added to `message` in future are encrypted automatically, with no implementation changes.
 
 > **Note:** The receiver must decrypt `message` **before** schema validation and ACK/NACK. This adds a small processing step to the synchronous response.
+
+```mermaid
+sequenceDiagram
+    participant NP1 as NP1 (sender)
+    participant NP2 as NP2 (receiver)
+    NP1->>NP1: Derive sharedKey, encrypt the message body (AES-256-GCM), Base64 encode
+    NP1->>NP2: context (plaintext) + message (encrypted), signed as usual
+    NP2->>NP2: Derive sharedKey, decrypt message
+    NP2->>NP2: Validate the schema
+    NP2-->>NP1: ACK or NACK
+```
 
 #### Cryptographic Primitives
 
@@ -291,27 +336,40 @@ processAction(context.action, messageBody)
 
 #### End-to-End Flow
 
-```text
-NP1 (Sender)                                    NP2 (Receiver)
-─────────────────────────────────────────────────────────────────
-1. Fetch NP2 enc public key (registry)
-2. Derive sharedKey via DiffieHellman
-3. JSON.stringify(messageBody)
-4. Generate random IV (12 bytes)
-5. AES_GCM.encrypt → Base64 encode
-6. POST { context (plaintext), message (encrypted) }
-                                                7.  Fetch NP1 enc public key (registry)
-                                                8.  Derive sharedKey via DiffieHellman
-                                                9.  Base64.decode → split iv / ciphertext / authTag
-                                                10. AES_GCM.decrypt → verify authTag
-                                                11. JSON.parse → messageBody
-                                                12. schema.validate → ACK or NACK
-                                                13. processAction
+```mermaid
+sequenceDiagram
+    participant NP1 as NP1 (sender)
+    participant R as Registry
+    participant NP2 as NP2 (receiver)
+    NP1->>R: Fetch NP2's encryption public key
+    R-->>NP1: NP2's X25519 public key
+    Note over NP1: Derive sharedKey (Diffie-Hellman)<br/>JSON.stringify(message body)<br/>Generate a random 12-byte IV<br/>AES-GCM encrypt, Base64 encode
+    NP1->>NP2: POST context (plaintext) + message (encrypted)
+    NP2->>R: Fetch NP1's encryption public key
+    R-->>NP2: NP1's X25519 public key
+    Note over NP2: Derive the same sharedKey<br/>Base64 decode, split IV / ciphertext / authTag<br/>AES-GCM decrypt, verify authTag<br/>JSON.parse → message body<br/>Validate the schema
+    NP2-->>NP1: ACK or NACK
+    Note over NP2: Process the action
 ```
 
 ### 3.4 Form Encryption & Signing
 
 Form payloads are **encrypted and signed**: the whole form body is encrypted with the shared key, and a signature over the **encrypted** payload proves who sent it. The receiver verifies the signature first, then decrypts.
+
+```mermaid
+flowchart LR
+    subgraph Sender["<b>NP1: sender</b>"]
+        direction TB
+        F["Form data"] --> E["<b>Encrypt</b><br/><small>sharedKey, AES-256-GCM</small>"]:::enc --> H["<b>Digest</b><br/><small>BLAKE-512</small>"] --> SG["<b>Sign</b><br/><small>NP1's Ed25519 private key</small>"]:::sign
+    end
+    subgraph Receiver["<b>NP2: receiver</b>"]
+        direction TB
+        V["<b>1 · Verify the signature</b><br/><small>NP1's public key</small>"]:::sign --> D["<b>2 · Decrypt</b><br/><small>sharedKey</small>"]:::enc --> OK["Form data"]
+    end
+    Sender -- "encrypted form<br/>+ signature" --> Receiver
+    classDef sign fill:#0081cc1a,stroke:#0081cc,stroke-width:1.5px
+    classDef enc fill:#ec48991a,stroke:#ec4899,stroke-width:1.5px
+```
 
 #### Cryptographic Primitives
 
@@ -369,7 +427,7 @@ encrypted_payload = Base64.encode(JSON.stringify(payload))
 
 **Step 3 · Sign the encrypted payload**
 
-Signing follows the same method as Beckn API request signing (see [Auth Tools](/developer-guide/auth-tools)), applied to `encrypted_payload`.
+Signing follows the same method as Beckn API request signing (see [Signing & Verification](/developer-guide/auth-tools)), applied to `encrypted_payload`.
 
 **3a. Generate the digest** of `encrypted_payload` using BLAKE-512:
 
@@ -512,25 +570,26 @@ preProcess(formData)
 
 #### End-to-End Flow
 
-```text
-NP1 (Sender)                                    NP2 (Receiver)
-─────────────────────────────────────────────────────────────────
-1. Fetch NP2 enc public key (registry)
-2. Derive sharedKey via DiffieHellman
-3. JSON.stringify(formData)
-4. Generate random nonce (12 bytes)
-5. AES_GCM.encrypt → { encrypted_data, hmac, nonce } → Base64 encode
-6. BLAKE512(encrypted_payload) → construct signing string
-7. Ed25519.sign → Base64 encode → Authorization header
-8. POST { context, encrypted_payload } + Authorization header
-                                                9.  Fetch NP1 sign public key (registry)
-                                                10. Ed25519.verify → REJECT if invalid
-                                                11. Fetch NP1 enc public key (registry)
-                                                12. Derive sharedKey via DiffieHellman
-                                                13. Base64.decode → { encrypted_data, hmac, nonce }
-                                                14. AES_GCM.decrypt → verify authTag
-                                                15. JSON.parse → formData
-                                                16. validate & preProcess
+```mermaid
+sequenceDiagram
+    participant NP1 as NP1 (sender)
+    participant R as Registry
+    participant NP2 as NP2 (receiver)
+    NP1->>R: Fetch NP2's encryption public key
+    R-->>NP1: NP2's X25519 public key
+    Note over NP1: <b>Encrypt</b><br/>Derive sharedKey (Diffie-Hellman)<br/>JSON.stringify(form data)<br/>Generate a random 12-byte nonce<br/>AES-GCM encrypt → encrypted_data, hmac, nonce → Base64
+    Note over NP1: <b>Sign</b><br/>BLAKE-512 of the encrypted payload → signing string<br/>Ed25519 sign → Base64 → Authorization header
+    NP1->>NP2: POST context + encrypted_payload, with Authorization header
+    NP2->>R: Fetch NP1's signing public key
+    R-->>NP2: NP1's Ed25519 public key
+    Note over NP2: Ed25519 verify
+    alt Signature invalid
+        NP2-->>NP1: Reject
+    else Signature valid
+        NP2->>R: Fetch NP1's encryption public key
+        R-->>NP2: NP1's X25519 public key
+        Note over NP2: Derive sharedKey (Diffie-Hellman)<br/>Base64 decode → encrypted_data, hmac, nonce<br/>AES-GCM decrypt, verify authTag<br/>JSON.parse → form data<br/>Validate and pre-process
+    end
 ```
 
 ---
