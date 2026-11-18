@@ -1,0 +1,59 @@
+# Node --inspect overlay.
+#
+# WHEN TO USE THIS instead of running a service natively:
+#   Native debugging (the launch.json "TS:" configs) is simpler and gives you
+#   fast restarts — prefer it. But a natively-run service loses its Docker DNS
+#   name, so anything calling it as http://<service>:<port> from inside the
+#   network breaks. db-service is the worst case: five containers call it.
+#
+#   This overlay keeps the service in the Docker network and exposes an
+#   inspector port instead, so all container-to-container DNS keeps working.
+#
+# COST: the images run compiled dist/, so breakpoints need source maps.
+# automation-db and automation-report-service have sourceMap absent from their
+# tsconfig.json — add "sourceMap": true and rebuild before their breakpoints
+# will bind to .ts source.
+#
+# USAGE — one service at a time (they all use 9229):
+#   docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d db-service
+#   # VS Code -> "Attach: Node :9229 (container or local)"
+#
+# Revert:
+#   docker compose -f docker-compose.yml up -d <service>
+
+services:
+  db-service:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/index.js"]
+    ports:
+      - "5001:5001"
+      - "9229:9229"
+
+  config-service:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/index.js"]
+    ports:
+      - "5556:5556"
+      - "9229:9229"
+
+  playground-mock-service:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/index.js"]
+    ports:
+      - "3031:3000"
+      - "9229:9229"
+
+  report-service:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/index"]
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+
+  ui-backend:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/index.js"]
+    ports:
+      - "3034:5000"
+      - "9229:9229"
+
+  backoffice-backend:
+    command: ["node", "--inspect=0.0.0.0:9229", "dist/src/index.js"]
+    ports:
+      - "5200:5000"
+      - "9229:9229"

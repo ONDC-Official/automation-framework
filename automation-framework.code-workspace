@@ -1,0 +1,40 @@
+{
+  "folders": [
+    { "name": "◆ framework (root)",        "path": "." },
+    { "name": "spec: specifications",      "path": "automation-specifications" },
+    { "name": "spec: api-service (gen)",   "path": "api-service" },
+    { "name": "ts: db",                    "path": "automation-db" },
+    { "name": "ts: config",                "path": "automation-config-service" },
+    { "name": "ts: mock-playground",       "path": "automation-mock-playground-service" },
+    { "name": "ts: report",                "path": "automation-report-service" },
+    { "name": "ts: ui-backend",            "path": "automation-frontend/backend" },
+    { "name": "web: ui-frontend",          "path": "automation-frontend/frontend" },
+    { "name": "ts: backoffice-backend",    "path": "automation-backoffice/backend" },
+    { "name": "web: backoffice-frontend",  "path": "automation-backoffice/frontend" },
+    { "name": "go: recorder",              "path": "automation-recorder-service" },
+    { "name": "go: user-management",       "path": "automation-user-management" },
+    { "name": "js: pramaan (legacy)",      "path": "automation-report-pramaan" }
+  ],
+  "settings": {
+    "files.exclude": { "**/node_modules": true },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build-output/temp/automation-beckn-plugins/pkg": true
+    },
+    "typescript.tsdk": "automation-frontend/frontend/node_modules/typescript/lib",
+    "go.toolsManagement.autoUpdate": false,
+    "debug.javascript.autoAttachFilter": "disabled"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "golang.go",
+      "ms-vscode.js-debug",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "redhat.vscode-yaml",
+      "ms-azuretools.vscode-docker"
+    ]
+  }
+}
